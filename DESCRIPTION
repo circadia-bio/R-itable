@@ -8,7 +8,7 @@ Authors@R: c(
            comment = c(ORCID = "0000-0003-0853-1319")),
     person("Mario", "Leocadio-Miguel",
            email = "mario.miguel@northumbria.ac.uk",
-           role = c("aut", "cre"),
+           role = "aut",
            comment = c(ORCID = "0000-0002-7248-3529"))
   )
 Description: Provides profile-likelihood variance-components estimation of

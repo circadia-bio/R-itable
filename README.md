@@ -131,7 +131,7 @@ For a full walkthrough see `vignette("getting-started", package = "itable")`.
 | Role | Name | Affiliation |
 |------|------|-------------|
 | Author & maintainer | Lucas França | Northumbria University / Circadia Lab |
-| Author & maintainer | Mario Leocadio-Miguel | Northumbria University / Circadia Lab |
+| Author | Mario Leocadio-Miguel | Northumbria University / Circadia Lab |
 
 ---
 
