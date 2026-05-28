@@ -1,29 +1,24 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 139" width="120" height="139">
-  <!-- Hex background: deep navy -->
-  <polygon points="60,4 113,34 113,94 60,124 7,94 7,34"
-           fill="#1E3A5F" stroke="#44ACFF" stroke-width="2.5"/>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 502 580" width="502" height="580">
+  <g transform="translate(251,290)">
+    <polygon points="0,-261 226,-130 226,130 0,261 -226,130 -226,-130"
+             fill="#1E3A5F" stroke="#44ACFF" stroke-width="6"/>
 
-  <!-- h² — pink h, blue superscript 2 -->
-  <text x="28" y="76" font-family="Livvic, Georgia, serif"
-        font-size="42" font-weight="700" fill="#FE9EC7">h</text>
-  <text x="58" y="56" font-family="Livvic, Georgia, serif"
-        font-size="24" font-weight="700" fill="#44ACFF">2</text>
+    <text x="-61" y="36" font-family="Georgia,serif" font-size="189" font-weight="700" fill="#FE9EC7">h</text>
+    <text x="92" y="-79" font-family="Georgia,serif" font-size="95" font-weight="700" fill="#44ACFF">2</text>
 
-  <!-- Forest-plot motif: baseline + two CI lines with points -->
-  <line x1="16" y1="92" x2="104" y2="92" stroke="#44ACFF" stroke-width="0.8" opacity="0.35"/>
+    <line x1="-144" y1="95" x2="144" y2="95" stroke="#44ACFF" stroke-width="1.5" opacity="0.25"/>
 
-  <!-- Point 1: pink -->
-  <line x1="36" y1="87" x2="36" y2="97" stroke="#FE9EC7" stroke-width="2"/>
-  <line x1="24" y1="92" x2="48" y2="92" stroke="#FE9EC7" stroke-width="1.5"/>
-  <circle cx="36" cy="92" r="3.5" fill="#FE9EC7"/>
+    <line x1="-117" y1="95" x2="-27" y2="95" stroke="#FE9EC7" stroke-width="3.5"/>
+    <line x1="-117" y1="84" x2="-117" y2="106" stroke="#FE9EC7" stroke-width="3.5"/>
+    <line x1="-27" y1="84" x2="-27" y2="106" stroke="#FE9EC7" stroke-width="3.5"/>
+    <circle cx="-72" cy="95" r="9" fill="#FE9EC7"/>
 
-  <!-- Point 2: blue -->
-  <line x1="72" y1="87" x2="72" y2="97" stroke="#44ACFF" stroke-width="2"/>
-  <line x1="58" y1="92" x2="86" y2="92" stroke="#44ACFF" stroke-width="1.5"/>
-  <circle cx="72" cy="92" r="3.5" fill="#44ACFF"/>
+    <line x1="18" y1="95" x2="117" y2="95" stroke="#44ACFF" stroke-width="3.5"/>
+    <line x1="18" y1="84" x2="18" y2="106" stroke="#44ACFF" stroke-width="3.5"/>
+    <line x1="117" y1="84" x2="117" y2="106" stroke="#44ACFF" stroke-width="3.5"/>
+    <circle cx="68" cy="95" r="9" fill="#44ACFF"/>
 
-  <!-- Package name -->
-  <text x="60" y="136" font-family="Livvic, Georgia, serif"
-        font-size="13" font-weight="700" fill="#1E3A5F"
-        text-anchor="middle" letter-spacing="1">Ritable</text>
+    <text x="0" y="177" font-family="Georgia,serif" font-size="31" font-weight="700" fill="#FFFFFF"
+          text-anchor="middle" letter-spacing="4">R-itable</text>
+  </g>
 </svg>
