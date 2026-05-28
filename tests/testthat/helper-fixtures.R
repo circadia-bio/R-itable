@@ -1,38 +1,46 @@
 # Shared fixtures for all itable tests.
 # Loaded automatically by testthat before any test file runs.
 #
-# Pedigree layout (make_test_pedigree):
+# make_test_pedigree() -- small pedigree for build_grm unit tests.
 #
-#   Founders (sex):  1(M) 2(F)   3(M) 4(F)   5(M) 6(F)
-#   F2:              7(M)=1x2    8(F)=3x4    9(M)=5x6   10(F)=5x6
+#   Four unrelated founder couples (F1):
+#     Couple A: 1(M) x 2(F)
+#     Couple B: 3(M) x 4(F)
+#     Couple C: 5(M) x 6(F)
+#     Couple D: 7(M) x 8(F)
 #
-#   NOTE: 9 and 10 are full siblings -- do NOT mate them.
-#   F3 (study subjects 11-15):
-#     11(M) = 7(M) x  8(F)   <- couple A x couple B offspring
-#     12(F) = 7(M) x  8(F)   <- full sib of 11
-#     13(M) = 9(M) x  8(F)   <- 9 is unrelated to 8's family via different founders
-#     14(F) = 9(M) x  8(F)   <- full sib of 13
-#     15(M) = 7(M) x 10(F)   <- unrelated to 11/12 via different mothers
+#   F2 (one offspring per couple, all unrelated to each other):
+#     9(M)  = 1 x 2   (from couple A)
+#    10(F)  = 3 x 4   (from couple B)
+#    11(M)  = 5 x 6   (from couple C)
+#    12(F)  = 7 x 8   (from couple D)
 #
-#   Sex assignments:  8=F, 10=F are mothers; 7=M, 9=M are fathers. Consistent.
-#   No consanguineous matings => all F3 diagonal = 1.
+#   F3 study subjects (IDs 13-16):
+#    13(M) = 9  x 10  <- parents from A and B -- unrelated to 15/16
+#    14(F) = 9  x 10  <- full sibling of 13
+#    15(M) = 11 x 12  <- parents from C and D -- unrelated to 13/14
+#    16(F) = 11 x 12  <- full sibling of 15
+#
+#   13 and 15 share NO founders => A["13","15"] = 0 exactly.
+#   13 and 14 are full siblings  => A["13","14"] = 0.5 exactly.
+#   All F3 diagonal = 1 (no inbreeding).
 
 make_test_pedigree <- function() {
   data.frame(
-    id  = 1:15,
-    pat = c(0L,0L,0L,0L,0L,0L, 1L,3L,5L,5L, 7L,7L,9L,9L,7L),
-    mom = c(0L,0L,0L,0L,0L,0L, 2L,4L,6L,6L, 8L,8L,8L,8L,10L),
-    sex = c(1L,2L,1L,2L,1L,2L, 1L,2L,1L,2L, 1L,2L,1L,2L,1L)
+    id  = 1:16,
+    pat = c(0L,0L,0L,0L,0L,0L,0L,0L, 1L,3L,5L,7L, 9L,9L,11L,11L),
+    mom = c(0L,0L,0L,0L,0L,0L,0L,0L, 2L,4L,6L,8L, 10L,10L,12L,12L),
+    sex = c(1L,2L,1L,2L,1L,2L,1L,2L, 1L,2L,1L,2L,  1L,2L,1L,2L)
   )
 }
 
 make_test_data <- function(seed = 42) {
   set.seed(seed)
-  study_ids <- 11:15
+  study_ids <- 13:16
   data.frame(
     IID     = study_ids,
     age     = round(runif(length(study_ids), 20, 70)),
-    sex_num = c(1L, 2L, 1L, 2L, 1L),
+    sex_num = c(1L, 2L, 1L, 2L),
     bmi     = round(rnorm(length(study_ids), 25, 4), 1),
     hdl     = round(rnorm(length(study_ids), 55, 12), 1)
   )
