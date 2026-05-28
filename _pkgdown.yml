@@ -104,6 +104,11 @@ template:
         /* -- Search -- */
         #search-input { border-color: #44ACFF; }
       </style>
+      <script>
+        document.addEventListener('DOMContentLoaded', function() {
+          document.title = document.title.replace(/\bRitable\b/g, 'R-itable');
+        });
+      </script>
 
 logo: man/figures/logo.svg
 favicon: man/figures/logo.svg
