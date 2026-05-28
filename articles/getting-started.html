@@ -320,50 +320,100 @@ tidy data frame.</p>
 <hr>
 </div>
 <div class="section level2">
-<h2 id="real-study-workflow">5. Real-study workflow<a class="anchor" aria-label="anchor" href="#real-study-workflow"></a>
+<h2 id="realistic-workflow">5. Realistic workflow<a class="anchor" aria-label="anchor" href="#realistic-workflow"></a>
 </h2>
-<p>A typical family cohort workflow looks like this:</p>
+<p>Here we simulate a small multi-family cohort — 80 nuclear families, 2
+parents + 3 offspring each — with three phenotypes that have different
+true h² values. This mirrors what you would do with real pedigree and
+phenotype CSV files.</p>
 <div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-itable.circadia-lab.uk">Ritable</a></span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 1. Load pedigree (full pedigree including founders)</span></span>
-<span><span class="va">ped</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"baependi_pedigree_full.csv"</span><span class="op">)</span></span>
+<span><span class="co"># ---- 1. Simulate pedigree ---------------------------------------------------</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">2026</span><span class="op">)</span></span>
+<span><span class="va">n_fam</span> <span class="op">&lt;-</span> <span class="fl">80</span></span>
 <span></span>
-<span><span class="co"># 2. Load analysis dataset</span></span>
-<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/utils/read.table.html" class="external-link">read.csv</a></span><span class="op">(</span><span class="st">"baependi_analysis_dataset.csv"</span><span class="op">)</span></span>
-<span><span class="va">dat</span><span class="op">$</span><span class="va">age2</span>    <span class="op">&lt;-</span> <span class="va">dat</span><span class="op">$</span><span class="va">age</span><span class="op">^</span><span class="fl">2</span></span>
-<span><span class="va">dat</span><span class="op">$</span><span class="va">age_sex</span> <span class="op">&lt;-</span> <span class="va">dat</span><span class="op">$</span><span class="va">age</span> <span class="op">*</span> <span class="va">dat</span><span class="op">$</span><span class="va">sex_num</span></span>
+<span><span class="va">ped</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/do.call.html" class="external-link">do.call</a></span><span class="op">(</span><span class="va">rbind</span>, <span class="fu"><a href="https://rdrr.io/r/base/lapply.html" class="external-link">lapply</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/seq.html" class="external-link">seq_len</a></span><span class="op">(</span><span class="va">n_fam</span><span class="op">)</span>, <span class="kw">function</span><span class="op">(</span><span class="va">f</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="va">base</span> <span class="op">&lt;-</span> <span class="op">(</span><span class="va">f</span> <span class="op">-</span> <span class="fl">1L</span><span class="op">)</span> <span class="op">*</span> <span class="fl">5L</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>    id  <span class="op">=</span> <span class="va">base</span> <span class="op">+</span> <span class="fl">1</span><span class="op">:</span><span class="fl">5</span>,</span>
+<span>    pat <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">0L</span>, <span class="va">base</span> <span class="op">+</span> <span class="fl">1L</span>, <span class="va">base</span> <span class="op">+</span> <span class="fl">1L</span>, <span class="va">base</span> <span class="op">+</span> <span class="fl">1L</span><span class="op">)</span>,</span>
+<span>    mom <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">0L</span>, <span class="fl">0L</span>, <span class="va">base</span> <span class="op">+</span> <span class="fl">2L</span>, <span class="va">base</span> <span class="op">+</span> <span class="fl">2L</span>, <span class="va">base</span> <span class="op">+</span> <span class="fl">2L</span><span class="op">)</span>,</span>
+<span>    sex <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="fl">1L</span>, <span class="fl">2L</span>, <span class="fu"><a href="https://rdrr.io/r/base/sample.html" class="external-link">sample</a></span><span class="op">(</span><span class="fl">1</span><span class="op">:</span><span class="fl">2</span>, <span class="fl">3</span>, replace <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="op">)</span></span>
+<span><span class="op">}</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 3. Build GRM once -- reuse for all traits</span></span>
-<span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_grm.html">build_grm</a></span><span class="op">(</span><span class="va">ped</span>,</span>
-<span>               study_ids <span class="op">=</span> <span class="va">dat</span><span class="op">$</span><span class="va">IID</span>,</span>
-<span>               id_col    <span class="op">=</span> <span class="st">"IID"</span>,</span>
-<span>               pat_col   <span class="op">=</span> <span class="st">"pat"</span>,</span>
-<span>               mom_col   <span class="op">=</span> <span class="st">"mat"</span>,</span>
-<span>               sex_col   <span class="op">=</span> <span class="st">"sex_num"</span><span class="op">)</span></span>
+<span><span class="co"># ---- 2. Simulate phenotypes for offspring -----------------------------------</span></span>
+<span><span class="co"># Three traits with approximate h2: bmi ~0.6, sbp ~0.35, hdl ~0.5</span></span>
+<span><span class="va">simulate_trait</span> <span class="op">&lt;-</span> <span class="kw">function</span><span class="op">(</span><span class="va">ped</span>, <span class="va">n_fam</span>, <span class="va">h2</span>, <span class="va">seed</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="va">seed</span><span class="op">)</span></span>
+<span>  <span class="va">genetic</span>  <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/rep.html" class="external-link">rep</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="va">n_fam</span>, <span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">h2</span><span class="op">)</span><span class="op">)</span>,       each <span class="op">=</span> <span class="fl">5</span><span class="op">)</span></span>
+<span>  <span class="va">residual</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">ped</span><span class="op">)</span>,          <span class="fl">0</span>, <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">h2</span><span class="op">)</span><span class="op">)</span></span>
+<span>  <span class="va">genetic</span> <span class="op">+</span> <span class="va">residual</span></span>
+<span><span class="op">}</span></span>
 <span></span>
-<span><span class="co"># 4. Define covariate models</span></span>
+<span><span class="va">pheno_all</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  bmi <span class="op">=</span> <span class="fu">simulate_trait</span><span class="op">(</span><span class="va">ped</span>, <span class="va">n_fam</span>, h2 <span class="op">=</span> <span class="fl">0.60</span>, seed <span class="op">=</span> <span class="fl">1</span><span class="op">)</span>,</span>
+<span>  sbp <span class="op">=</span> <span class="fu">simulate_trait</span><span class="op">(</span><span class="va">ped</span>, <span class="va">n_fam</span>, h2 <span class="op">=</span> <span class="fl">0.35</span>, seed <span class="op">=</span> <span class="fl">2</span><span class="op">)</span>,</span>
+<span>  hdl <span class="op">=</span> <span class="fu">simulate_trait</span><span class="op">(</span><span class="va">ped</span>, <span class="va">n_fam</span>, h2 <span class="op">=</span> <span class="fl">0.50</span>, seed <span class="op">=</span> <span class="fl">3</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">off_rows</span> <span class="op">&lt;-</span> <span class="va">ped</span><span class="op">$</span><span class="va">pat</span> <span class="op">!=</span> <span class="fl">0L</span></span>
+<span><span class="va">dat</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  IID     <span class="op">=</span> <span class="va">ped</span><span class="op">$</span><span class="va">id</span><span class="op">[</span><span class="va">off_rows</span><span class="op">]</span>,</span>
+<span>  age     <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/sum.html" class="external-link">sum</a></span><span class="op">(</span><span class="va">off_rows</span><span class="op">)</span>, <span class="fl">20</span>, <span class="fl">75</span><span class="op">)</span><span class="op">)</span>,</span>
+<span>  sex_num <span class="op">=</span> <span class="va">ped</span><span class="op">$</span><span class="va">sex</span><span class="op">[</span><span class="va">off_rows</span><span class="op">]</span>,</span>
+<span>  bmi     <span class="op">=</span> <span class="va">pheno_all</span><span class="op">$</span><span class="va">bmi</span><span class="op">[</span><span class="va">off_rows</span><span class="op">]</span>,</span>
+<span>  sbp     <span class="op">=</span> <span class="va">pheno_all</span><span class="op">$</span><span class="va">sbp</span><span class="op">[</span><span class="va">off_rows</span><span class="op">]</span>,</span>
+<span>  hdl     <span class="op">=</span> <span class="va">pheno_all</span><span class="op">$</span><span class="va">hdl</span><span class="op">[</span><span class="va">off_rows</span><span class="op">]</span></span>
+<span><span class="op">)</span></span>
+<span><span class="va">dat</span><span class="op">$</span><span class="va">age2</span> <span class="op">&lt;-</span> <span class="va">dat</span><span class="op">$</span><span class="va">age</span><span class="op">^</span><span class="fl">2</span></span>
+<span></span>
+<span><span class="co"># ---- 3. Build GRM once — reuse for all models -------------------------------</span></span>
+<span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/build_grm.html">build_grm</a></span><span class="op">(</span><span class="va">ped</span>, study_ids <span class="op">=</span> <span class="va">dat</span><span class="op">$</span><span class="va">IID</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># ---- 4. Define covariate models ---------------------------------------------</span></span>
 <span><span class="va">covs_list</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/list.html" class="external-link">list</a></span><span class="op">(</span></span>
 <span>  unadj <span class="op">=</span> <span class="cn">NULL</span>,</span>
 <span>  cov1  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex_num"</span><span class="op">)</span>,</span>
-<span>  cov2  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex_num"</span>, <span class="st">"age2"</span><span class="op">)</span>,</span>
-<span>  cov3  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex_num"</span>, <span class="st">"age2"</span>, <span class="st">"age_sex"</span><span class="op">)</span></span>
+<span>  cov2  <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex_num"</span>, <span class="st">"age2"</span><span class="op">)</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 5. Run batch estimation</span></span>
-<span><span class="va">brain_traits</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"k"</span>, <span class="st">"S"</span>, <span class="st">"I"</span>, <span class="st">"AvgThickness"</span>, <span class="st">"localGI_corrected"</span><span class="op">)</span></span>
-<span></span>
+<span><span class="co"># ---- 5. Batch estimation ----------------------------------------------------</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/herit_batch.html">herit_batch</a></span><span class="op">(</span></span>
-<span>  traits    <span class="op">=</span> <span class="va">brain_traits</span>,</span>
+<span>  traits    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bmi"</span>, <span class="st">"sbp"</span>, <span class="st">"hdl"</span><span class="op">)</span>,</span>
 <span>  grm       <span class="op">=</span> <span class="va">A</span>,</span>
 <span>  data      <span class="op">=</span> <span class="va">dat</span>,</span>
 <span>  covs_list <span class="op">=</span> <span class="va">covs_list</span></span>
 <span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 6. Save and plot</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/write.table.html" class="external-link">write.csv</a></span><span class="op">(</span><span class="va">res</span>, <span class="st">"table_heritability_brain.csv"</span>, row.names <span class="op">=</span> <span class="cn">FALSE</span><span class="op">)</span></span>
-<span><span class="fu"><a href="../reference/plot_forest.html">plot_forest</a></span><span class="op">(</span><span class="va">res</span>, model_filter <span class="op">=</span> <span class="st">"cov2"</span>,</span>
-<span>            title <span class="op">=</span> <span class="st">"Brain morphology heritability (age + sex + age2)"</span><span class="op">)</span></span></code></pre></div>
+<span><span class="va">res</span></span>
+<span><span class="co">#&gt;       label trait       covariates   n     h2     se  ci_lo ci_hi pval sigma2_a</span></span>
+<span><span class="co">#&gt; 1 bmi_unadj   bmi                  240 0.9990 0.1297 0.8400     1    0  0.93477</span></span>
+<span><span class="co">#&gt; 2 sbp_unadj   sbp                  240 0.8055 0.1392 0.5303     1    0  0.80117</span></span>
+<span><span class="co">#&gt; 3 hdl_unadj   hdl                  240 0.7998 0.1394 0.5243     1    0  0.79550</span></span>
+<span><span class="co">#&gt; 4  bmi_cov1   bmi      age+sex_num 240 0.9990 0.1313 0.8331     1    0  0.92785</span></span>
+<span><span class="co">#&gt; 5  sbp_cov1   sbp      age+sex_num 240 0.8012 0.1402 0.5240     1    0  0.79187</span></span>
+<span><span class="co">#&gt; 6  hdl_cov1   hdl      age+sex_num 240 0.8014 0.1395 0.5258     1    0  0.79210</span></span>
+<span><span class="co">#&gt; 7  bmi_cov2   bmi age+sex_num+age2 240 0.9990 0.1318 0.8280     1    0  0.92432</span></span>
+<span><span class="co">#&gt; 8  sbp_cov2   sbp age+sex_num+age2 240 0.7999 0.1402 0.5228     1    0  0.78783</span></span>
+<span><span class="co">#&gt; 9  hdl_cov2   hdl age+sex_num+age2 240 0.8039 0.1405 0.5259     1    0  0.79525</span></span>
+<span><span class="co">#&gt;   sigma2_e</span></span>
+<span><span class="co">#&gt; 1  0.00094</span></span>
+<span><span class="co">#&gt; 2  0.19348</span></span>
+<span><span class="co">#&gt; 3  0.19915</span></span>
+<span><span class="co">#&gt; 4  0.00093</span></span>
+<span><span class="co">#&gt; 5  0.19651</span></span>
+<span><span class="co">#&gt; 6  0.19624</span></span>
+<span><span class="co">#&gt; 7  0.00093</span></span>
+<span><span class="co">#&gt; 8  0.19710</span></span>
+<span><span class="co">#&gt; 9  0.19393</span></span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
+<span>  <span class="fu"><a href="../reference/plot_forest.html">plot_forest</a></span><span class="op">(</span><span class="va">res</span>, model_filter <span class="op">=</span> <span class="st">"cov2"</span>,</span>
+<span>              title <span class="op">=</span> <span class="st">"Heritability estimates (age + sex + age\u00b2)"</span><span class="op">)</span></span>
+<span><span class="op">}</span></span></code></pre></div>
+<p><img src="getting-started_files/figure-html/real-forest-1.png" class="r-plt" alt="" width="672"></p>
 <hr>
 </div>
 <div class="section level2">
