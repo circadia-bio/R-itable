@@ -73,6 +73,14 @@ vector, placing empirical quantiles onto a standard normal scale."><meta propert
 </style><script>
   document.addEventListener('DOMContentLoaded', function() {
     document.title = document.title.replace(/\bRitable\b/g, 'R-itable');
+    var brand = document.querySelector('.navbar-brand');
+    if (brand) {
+      brand.childNodes.forEach(function(node) {
+        if (node.nodeType === 3) {
+          node.textContent = node.textContent.replace(/\bRitable\b/g, 'R-itable');
+        }
+      });
+    }
   });
 </script></head><body>
     <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
