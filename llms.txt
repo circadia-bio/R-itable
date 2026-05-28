@@ -1,4 +1,4 @@
-# 🧑‍🧑‍🧒‍🧒 R-itable
+# 🧬 R-itable
 
 **Profile-likelihood heritability estimation for family cohort studies —
 no SOLAR required.**
@@ -62,7 +62,7 @@ get results you can trace back to first principles.
 
     R-itable/
     ├── R/
-    │   ├── itable-package.R       # package-level docs
+    │   ├── Ritable-package.R      # package-level docs and colour palette
     │   ├── build_grm.R            # build additive GRM from pedigree
     │   ├── int_transform.R        # rank-based inverse-normal transform
     │   ├── herit_vc.R             # single-trait VC estimator
