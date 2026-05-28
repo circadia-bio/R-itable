@@ -1,0 +1,27 @@
+# R
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+# Package build
+*.tar.gz
+*.zip
+/doc/
+/Meta/
+
+# roxygen / devtools
+/man/*.Rd.bak
+NAMESPACE.bak
+
+# Tests
+/tests/testthat/_snaps/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Data (never commit raw subject data)
+data/*.csv
+data/*.rds
+data/*.RData
