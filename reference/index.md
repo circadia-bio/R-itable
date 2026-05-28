@@ -23,7 +23,7 @@ Helper functions used internally and exported for pipelines.
 - [`int_transform()`](https://r-itable.circadia-lab.uk/reference/int_transform.md)
   : Inverse-normal (rank-based) transformation
 - [`Ritable_colours`](https://r-itable.circadia-lab.uk/reference/Ritable_colours.md)
-  : Ritable colour palette
+  : R-itable colour palette
 
 ## Visualisation
 

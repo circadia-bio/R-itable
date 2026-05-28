@@ -1,4 +1,4 @@
-# Getting started with Ritable
+# Getting started with R-itable
 
 ``` r
 
@@ -7,7 +7,7 @@ library(Ritable)
 
 ## Overview
 
-**Ritable** estimates narrow-sense heritability (h²) for quantitative
+**R-itable** estimates narrow-sense heritability (h²) for quantitative
 traits in family cohort studies using a profile-likelihood
 variance-components approach, without requiring SOLAR Eclipse or any
 proprietary software.
@@ -302,8 +302,8 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 
 ## Citation
 
-If you use **Ritable** in a publication, please cite:
+If you use **R-itable** in a publication, please cite:
 
-    Franca, L. & Leocadio-Miguel, M. (2026). Ritable: Pedigree-Based Heritability
+    Franca, L. & Leocadio-Miguel, M. (2026). R-itable: Pedigree-Based Heritability
     Estimation for Family Cohort Studies. R package version 0.1.0.
     https://github.com/circadia-bio/R-itable

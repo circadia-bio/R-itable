@@ -12,7 +12,7 @@ experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](h
 
 ------------------------------------------------------------------------
 
-> ⚠️ **Ritable is in early development and has not been formally
+> ⚠️ **R-itable is in early development and has not been formally
 > tested.** The API may change without notice, estimation results have
 > not yet been validated against a reference implementation such as
 > SOLAR Eclipse, and the package has not undergone peer review. Use with
@@ -203,7 +203,7 @@ Helper functions used internally and exported for pipelines.
 - [`int_transform()`](https://r-itable.circadia-lab.uk/reference/int_transform.md)
   : Inverse-normal (rank-based) transformation
 - [`Ritable_colours`](https://r-itable.circadia-lab.uk/reference/Ritable_colours.md)
-  : Ritable colour palette
+  : R-itable colour palette
 
 ## Visualisation
 
@@ -226,4 +226,4 @@ Package-level documentation.
 ### Getting started
 
 - [Getting started with
-  Ritable](https://r-itable.circadia-lab.uk/articles/getting-started.md):
+  R-itable](https://r-itable.circadia-lab.uk/articles/getting-started.md):
