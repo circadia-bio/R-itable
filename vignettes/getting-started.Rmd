@@ -135,51 +135,81 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 
 ---
 
-## 5. Real-study workflow
+## 5. Realistic workflow
 
-A typical family cohort workflow looks like this:
+Here we simulate a small multi-family cohort — 80 nuclear families, 2 parents
++ 3 offspring each — with three phenotypes that have different true h² values.
+This mirrors what you would do with real pedigree and phenotype CSV files.
 
-```{r real-workflow, eval=FALSE}
+```{r real-workflow}
 library(Ritable)
 
-# 1. Load pedigree (full pedigree including founders)
-ped <- read.csv("baependi_pedigree_full.csv")
+# ---- 1. Simulate pedigree ---------------------------------------------------
+set.seed(2026)
+n_fam <- 80
 
-# 2. Load analysis dataset
-dat <- read.csv("baependi_analysis_dataset.csv")
-dat$age2    <- dat$age^2
-dat$age_sex <- dat$age * dat$sex_num
+ped <- do.call(rbind, lapply(seq_len(n_fam), function(f) {
+  base <- (f - 1L) * 5L
+  data.frame(
+    id  = base + 1:5,
+    pat = c(0L, 0L, base + 1L, base + 1L, base + 1L),
+    mom = c(0L, 0L, base + 2L, base + 2L, base + 2L),
+    sex = c(1L, 2L, sample(1:2, 3, replace = TRUE))
+  )
+}))
 
-# 3. Build GRM once -- reuse for all traits
-A <- build_grm(ped,
-               study_ids = dat$IID,
-               id_col    = "IID",
-               pat_col   = "pat",
-               mom_col   = "mat",
-               sex_col   = "sex_num")
+# ---- 2. Simulate phenotypes for offspring -----------------------------------
+# Three traits with approximate h2: bmi ~0.6, sbp ~0.35, hdl ~0.5
+simulate_trait <- function(ped, n_fam, h2, seed) {
+  set.seed(seed)
+  genetic  <- rep(rnorm(n_fam, 0, sqrt(h2)),       each = 5)
+  residual <- rnorm(nrow(ped),          0, sqrt(1 - h2))
+  genetic + residual
+}
 
-# 4. Define covariate models
+pheno_all <- data.frame(
+  bmi = simulate_trait(ped, n_fam, h2 = 0.60, seed = 1),
+  sbp = simulate_trait(ped, n_fam, h2 = 0.35, seed = 2),
+  hdl = simulate_trait(ped, n_fam, h2 = 0.50, seed = 3)
+)
+
+off_rows <- ped$pat != 0L
+dat <- data.frame(
+  IID     = ped$id[off_rows],
+  age     = round(runif(sum(off_rows), 20, 75)),
+  sex_num = ped$sex[off_rows],
+  bmi     = pheno_all$bmi[off_rows],
+  sbp     = pheno_all$sbp[off_rows],
+  hdl     = pheno_all$hdl[off_rows]
+)
+dat$age2 <- dat$age^2
+
+# ---- 3. Build GRM once — reuse for all models -------------------------------
+A <- build_grm(ped, study_ids = dat$IID)
+
+# ---- 4. Define covariate models ---------------------------------------------
 covs_list <- list(
   unadj = NULL,
   cov1  = c("age", "sex_num"),
-  cov2  = c("age", "sex_num", "age2"),
-  cov3  = c("age", "sex_num", "age2", "age_sex")
+  cov2  = c("age", "sex_num", "age2")
 )
 
-# 5. Run batch estimation
-brain_traits <- c("k", "S", "I", "AvgThickness", "localGI_corrected")
-
+# ---- 5. Batch estimation ----------------------------------------------------
 res <- herit_batch(
-  traits    = brain_traits,
+  traits    = c("bmi", "sbp", "hdl"),
   grm       = A,
   data      = dat,
   covs_list = covs_list
 )
 
-# 6. Save and plot
-write.csv(res, "table_heritability_brain.csv", row.names = FALSE)
-plot_forest(res, model_filter = "cov2",
-            title = "Brain morphology heritability (age + sex + age2)")
+res
+```
+
+```{r real-forest, fig.width=7, fig.height=4}
+if (requireNamespace("ggplot2", quietly = TRUE)) {
+  plot_forest(res, model_filter = "cov2",
+              title = "Heritability estimates (age + sex + age\u00b2)")
+}
 ```
 
 ---
