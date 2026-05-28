@@ -4,151 +4,90 @@
 <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
 <meta charset="utf-8">
 <meta http-equiv="X-UA-Compatible" content="IE=edge">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<title>R-itable — Pedigree-based heritability estimation • itable</title>
-<script src="deps/jquery-3.6.0/jquery-3.6.0.min.js"></script><meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<link href="deps/bootstrap-5.3.8/bootstrap.min.css" rel="stylesheet">
-<script src="deps/bootstrap-5.3.8/bootstrap.bundle.min.js"></script><link href="deps/Afacad-0.4.10/font.css" rel="stylesheet">
-<link href="deps/JetBrains_Mono-0.4.10/font.css" rel="stylesheet">
-<link href="deps/Livvic-0.4.10/font.css" rel="stylesheet">
-<link href="deps/font-awesome-6.5.2/css/all.min.css" rel="stylesheet">
-<link href="deps/font-awesome-6.5.2/css/v4-shims.min.css" rel="stylesheet">
-<script src="deps/headroom-0.11.0/headroom.min.js"></script><script src="deps/headroom-0.11.0/jQuery.headroom.min.js"></script><script src="deps/bootstrap-toc-1.0.1/bootstrap-toc.min.js"></script><script src="deps/clipboard.js-2.0.11/clipboard.min.js"></script><script src="deps/search-1.0.0/autocomplete.jquery.min.js"></script><script src="deps/search-1.0.0/fuse.min.js"></script><script src="deps/search-1.0.0/mark.min.js"></script><!-- pkgdown --><script src="pkgdown.js"></script><meta property="og:title" content="R-itable — Pedigree-based heritability estimation">
-<meta name="description" content="An R package for profile-likelihood variance-components heritability estimation in family cohort studies. No SOLAR Eclipse required. Built by the Circadia Lab at Northumbria University.
-">
-<meta property="og:description" content="An R package for profile-likelihood variance-components heritability estimation in family cohort studies. No SOLAR Eclipse required. Built by the Circadia Lab at Northumbria University.
-">
-<meta property="og:image" content="https://r-itable.circadia-lab.uk/logo.svg">
-<!-- R-itable custom CSS --><style>
-  /* ── Navbar ── */
-  .navbar {
-    background-color: #1E3A5F !important;
-    border-bottom: 2px solid #185FA5;
-  }
-  .navbar .navbar-brand,
-  .navbar-nav .nav-link,
-  .navbar-nav .nav-link:hover,
-  .navbar .navbar-toggler-icon,
-  .navbar form .btn {
-    color: #EEF5FF !important;
-  }
-  .navbar-nav .nav-link:hover { opacity: 0.8; }
-  .navbar-nav .nav-link.active {
-    color: #EEF5FF !important;
-    border-bottom: 2px solid #BA7517;
-  }
-  .navbar small.nav-text { color: #BA7517 !important; }
-
-  /* ── Navbar logo size ── */
-  .navbar-brand img { height: 40px; width: auto; }
-
-  /* ── Remove border under page title ── */
-  .page-header { border-bottom: none !important; }
-
-  /* ── Sidebar TOC links ── */
-  .sidebar .nav-link,
-  .sidebar a,
-  #toc a,
-  #toc .nav-link {
-    color: #1E3A5F !important;
-  }
-  .sidebar .nav-link:hover,
-  .sidebar a:hover,
-  #toc a:hover {
-    color: #185FA5 !important;
-  }
-  .sidebar .nav-link.active,
-  #toc .nav-link.active {
-    color: #185FA5 !important;
-    border-left: 2px solid #BA7517;
-    font-weight: 600;
-  }
-
-  /* ── Kill all text-muted on light backgrounds ── */
-  .text-muted { color: #185FA5 !important; }
-
-  /* ── Sidebar border ── */
-  .sidebar { border-left: 3px solid #185FA5; padding-left: 1rem; }
-
-  /* ── Reference index section headers ── */
-  .reference-index h2 {
-    color: #BA7517;
-    font-size: 0.8rem;
-    text-transform: uppercase;
-    letter-spacing: 0.08em;
-  }
-
-  /* ── Inline code ── */
-  code { color: #185FA5; background: #E2EAF4;
-    border-radius: 4px; padding: 0.1em 0.35em; }
-
-  /* ── Footer ── */
-  .footer { background: #1E3A5F; color: #94A3B8; padding: 1.5rem 0; }
-  .footer a { color: #C8DFF5; }
-
-  /* ── Search ── */
-  #search-input { border-color: #185FA5; }
-</style>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pedigree-Based Heritability Estimation for Family Cohort Studies • itable</title>
+<!-- jquery --><script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.1/jquery.min.js" integrity="sha512-v2CJ7UaYy4JwqLDIrZUI/4hqeoQieOmAZNXBeQyjo21dadnwR+8ZaIJVT8EE2iyI61OV8e6M8PP2/4hpQINQ/g==" crossorigin="anonymous" referrerpolicy="no-referrer"></script><!-- Bootstrap --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/css/bootstrap.min.css" integrity="sha256-bZLfwXAP04zRMK2BjiO8iu9pf4FbLqX6zitd+tIvLhE=" crossorigin="anonymous">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js" integrity="sha256-nuL8/2cJ5NDSSwnKD8VqreErSWHtnEP9E7AySL+1ev4=" crossorigin="anonymous"></script><!-- bootstrap-toc --><link rel="stylesheet" href="bootstrap-toc.css">
+<script src="bootstrap-toc.js"></script><!-- Font Awesome icons --><link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/all.min.css" integrity="sha256-mmgLkCYLUQbXn0B1SRqzHar6dCnv9oZFPEC1g1cwlkk=" crossorigin="anonymous">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.12.1/css/v4-shims.min.css" integrity="sha256-wZjR52fzng1pJHwx4aV2AO3yyTOXrcDW7jBpJtTwVxw=" crossorigin="anonymous">
+<!-- clipboard.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js" integrity="sha256-inc5kl9MA1hkeYUt+EC3BhlIgyp/2jDIyBLS6k3UxPI=" crossorigin="anonymous"></script><!-- headroom.js --><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/headroom.min.js" integrity="sha256-AsUX4SJE1+yuDu5+mAVzJbuYNPHj/WroHuZ8Ir/CkE0=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/headroom/0.11.0/jQuery.headroom.min.js" integrity="sha256-ZX/yNShbjqsohH1k95liqY9Gd8uOiE1S4vZc+9KQ1K4=" crossorigin="anonymous"></script><!-- pkgdown --><link href="pkgdown.css" rel="stylesheet">
+<script src="pkgdown.js"></script><meta property="og:title" content="Pedigree-Based Heritability Estimation for Family Cohort Studies">
+<meta property="og:description" content="Provides profile-likelihood variance-components estimation of narrow-sense heritability (h2) for quantitative traits in family cohort studies. Additive genetic relationship matrices are built from pedigrees via kinship2. Phenotypes are inverse-normal transformed internally. Likelihood-ratio tests use a one-sided chi-squared boundary correction equivalent to SOLAR Eclipse. Ninety-five percent confidence intervals are derived from the profile likelihood rather than Wald approximations. Batch estimation over many traits returns tidy data frames ready for downstream visualisation (forest plots, heatmaps).">
+<meta property="og:image" content="/logo.svg">
+<!-- mathjax --><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/MathJax.js" integrity="sha256-nvJJv9wWKEm88qvoQl9ekL2J+k/RWIsaSScxxlsrv8k=" crossorigin="anonymous"></script><script src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/config/TeX-AMS-MML_HTMLorMML.js" integrity="sha256-84DKXVJXs0/F8OTMzX4UR909+jtl4G7SPypPavF+GfA=" crossorigin="anonymous"></script><!--[if lt IE 9]>
+<script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+<script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+<![endif]-->
 </head>
-<body>
-    <a href="#main" class="visually-hidden-focusable">Skip to contents</a>
+<body data-spy="scroll" data-target="#toc">
 
 
-    <nav class="navbar navbar-expand-lg fixed-top bg-light" data-bs-theme="light" aria-label="Site navigation"><div class="container">
+    <div class="container template-home">
+      <header><div class="navbar navbar-default navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar" aria-expanded="false">
+        <span class="sr-only">Toggle navigation</span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <span class="navbar-brand">
+        <a class="navbar-link" href="index.html">itable</a>
+        <span class="version label label-default" data-toggle="tooltip" data-placement="bottom" title="">0.1.0</span>
+      </span>
+    </div>
 
-    <a class="navbar-brand me-2" href="index.html">itable</a>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+<li>
+  <a href="reference/index.html">Reference</a>
+</li>
+<li class="dropdown">
+  <a href="#" class="dropdown-toggle" data-toggle="dropdown" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+    Articles
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
-
-
-    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
-      <span class="navbar-toggler-icon"></span>
-    </button>
-
-    <div id="navbar" class="collapse navbar-collapse ms-3">
-      <ul class="navbar-nav me-auto">
-<li class="nav-item"><a class="nav-link" href="articles/getting-started.html">Get started</a></li>
-<li class="nav-item"><a class="nav-link" href="reference/index.html">Reference</a></li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-articles">
-<li><a class="dropdown-item" href="articles/getting-started.html">Getting started with itable</a></li>
+    <span class="caret"></span>
+  </a>
+  <ul class="dropdown-menu" role="menu">
+<li>
+      <a href="articles/getting-started.html">Getting started with R-itable</a>
+    </li>
   </ul>
 </li>
-<li class="nav-item dropdown">
-  <button class="nav-link dropdown-toggle" type="button" id="dropdown-news" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">News</button>
-  <ul class="dropdown-menu" aria-labelledby="dropdown-news">
-<li><h6 class="dropdown-header" data-toc-skip>Releases</h6></li>
-    <li><a class="dropdown-item" href="news/index.html">Changelog</a></li>
-    <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="news/index.html">Changelog</a></li>
-  </ul>
+<li>
+  <a href="news/index.html">Changelog</a>
 </li>
       </ul>
-<ul class="navbar-nav">
-<li class="nav-item"><form class="form-inline" role="search">
- <input class="form-control" type="search" name="search-input" id="search-input" autocomplete="off" aria-label="Search site" placeholder="Search for" data-search-index="search.json">
-</form></li>
-<li class="nav-item"><a class="external-link nav-link" href="https://github.com/circadia-bio/R-itable" aria-label="GitHub"><span class="fa fab fa-github"></span></a></li>
+<ul class="nav navbar-nav navbar-right">
+<li>
+  <a href="https://github.com/circadia-bio/R-itable/" class="external-link">
+    <span class="fab fa-github fa-lg"></span>
+
+  </a>
+</li>
       </ul>
 </div>
-
-
+<!--/.nav-collapse -->
   </div>
-</nav><div class="container template-home">
-<div class="row">
-  <main id="main" class="col-md-9"><div class="section level1">
-<div class="page-header">
-<img src="logo.svg" class="logo" alt=""><h1 id="test_tube-r-itable">🧪 R-itable<a class="anchor" aria-label="anchor" href="#test_tube-r-itable"></a>
-</h1>
+<!--/.container -->
 </div>
+<!--/.navbar -->
+
+
+
+      </header><div class="row">
+  <div class="contents col-md-9">
+<div class="section level1">
+<div class="page-header"><h1 id="test_tube-r-itable">🧪 R-itable<a class="anchor" aria-label="anchor" href="#test_tube-r-itable"></a>
+</h1></div>
 <p><strong>Profile-likelihood heritability estimation for family cohort studies — no SOLAR required.</strong></p>
 <p><a href="https://cran.r-project.org" class="external-link"><img src="https://img.shields.io/badge/R-%3E%3D4.1-276DC3" alt="R"></a> <a href="./LICENSE.html"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://lifecycle.r-lib.org/articles/stages.html" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a></p>
 <hr>
 <div class="section level2">
 <h2 id="open_book-what-is-r-itable">📖 What is R-itable?<a class="anchor" aria-label="anchor" href="#open_book-what-is-r-itable"></a>
 </h2>
-<p><strong>R-itable</strong> (<code><a href="https://r-itable.circadia-lab.uk">library(itable)</a></code>) estimates narrow-sense heritability (h²) for quantitative traits in pedigree-based family cohort studies. It implements a profile-likelihood variance-components approach equivalent to SOLAR Eclipse — without any proprietary dependencies, compiled code, or external binaries.</p>
+<p><strong>R-itable</strong> (<code><a href="https://r-itable.circadia-lab.uk" class="external-link">library(itable)</a></code>) estimates narrow-sense heritability (h²) for quantitative traits in pedigree-based family cohort studies. It implements a profile-likelihood variance-components approach equivalent to SOLAR Eclipse — without any proprietary dependencies, compiled code, or external binaries.</p>
 <p>Built for neuroimaging and biomedical cohorts where you need to run heritability over dozens of traits across multiple covariate models and get results you can trace back to first principles.</p>
 <hr>
 </div>
@@ -214,7 +153,7 @@
 <h3 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
 </h3>
 <div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-itable.circadia-lab.uk">itable</a></span><span class="op">)</span></span>
+<code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-itable.circadia-lab.uk" class="external-link">itable</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 1. Build GRM from pedigree</span></span>
 <span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_grm.html">build_grm</a></span><span class="op">(</span><span class="va">my_pedigree</span>, study_ids <span class="op">=</span> <span class="va">my_data</span><span class="op">$</span><span class="va">IID</span><span class="op">)</span></span>
@@ -285,11 +224,18 @@
 <th>Name</th>
 <th>Affiliation</th>
 </tr></thead>
-<tbody><tr>
+<tbody>
+<tr>
 <td>Author &amp; maintainer</td>
-<td>Lucas Veras</td>
+<td>Lucas França</td>
 <td>Northumbria University / Circadia Lab</td>
-</tr></tbody>
+</tr>
+<tr>
+<td>Author</td>
+<td>Mario Leocadio-Miguel</td>
+<td>Northumbria University / Circadia Lab</td>
+</tr>
+</tbody>
 </table>
 <hr>
 </div>
@@ -311,12 +257,14 @@
 <p>Copyright © Circadia Lab, 2026</p>
 </div>
 </div>
-  </main><aside class="col-md-3"><div class="links">
+  </div>
+
+  <div class="col-md-3 hidden-xs hidden-sm" id="pkgdown-sidebar">
+    <div class="links">
 <h2 data-toc-skip>Links</h2>
 <ul class="list-unstyled">
 <li><a href="https://github.com/circadia-bio/R-itable/" class="external-link">Browse source code</a></li>
 <li><a href="https://github.com/circadia-bio/R-itable/issues" class="external-link">Report a bug</a></li>
-<li><a href="https://circadia-lab.uk" class="external-link">Circadia Lab</a></li>
 </ul>
 </div>
 
@@ -340,26 +288,31 @@
 <h2 data-toc-skip>Developers</h2>
 <ul class="list-unstyled">
 <li>
-<a href="https://orcid.org/0000-0000-0000-0000" class="external-link">Lucas Veras</a> <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0000-0000-0000" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<a href="https://orcid.org/0000-0003-0853-1319" class="external-link">Lucas França</a> <br><small class="roles"> Author, maintainer </small> <a href="https://orcid.org/0000-0003-0853-1319" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
+<li>
+<a href="https://orcid.org/0000-0002-7248-3529" class="external-link">Mario Leocadio-Miguel</a> <br><small class="roles"> Author </small> <a href="https://orcid.org/0000-0002-7248-3529" target="orcid.widget" aria-label="ORCID" class="external-link"><span class="fab fa-orcid orcid" aria-hidden="true"></span></a>  </li>
 </ul>
 </div>
 
 
 
-  </aside>
+  </div>
 </div>
 
 
-    <footer><div class="pkgdown-footer-left">
-  <p><strong>R-itable</strong> — Circadia Lab, Northumbria University. Lucas Veras.</p>
+      <footer><div class="copyright">
+  <p></p>
+<p><strong>R-itable</strong> — Circadia Lab, Northumbria University. Lucas França &amp; Mario Leocadio-Miguel.</p>
 </div>
 
-<div class="pkgdown-footer-right">
-  <p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
+<div class="pkgdown">
+  <p></p>
+<p>Site built with <a href="https://pkgdown.r-lib.org/" class="external-link">pkgdown</a> 2.2.0.</p>
 </div>
 
-    </footer>
+      </footer>
 </div>
+
 
 
 
