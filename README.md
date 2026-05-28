@@ -5,6 +5,11 @@
 [![R](https://img.shields.io/badge/R-%3E%3D4.1-276DC3)](https://cran.r-project.org)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
 [![Lifecycle: experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html)
+[![Status](https://img.shields.io/badge/status-early%20development-orange)](https://github.com/circadia-bio/R-itable)
+
+---
+
+> ⚠️ **Ritable is in early development and has not been formally tested.** The API may change without notice, estimation results have not yet been validated against a reference implementation such as SOLAR Eclipse, and the package has not undergone peer review. Use with caution and verify outputs independently before using in any research context.
 
 ---
 
