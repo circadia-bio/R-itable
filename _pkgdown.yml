@@ -121,7 +121,7 @@ home:
     structure: [links, license, community, citation, authors, dev]
 
 navbar:
-  title: "Ritable"
+  title: "R-itable"
   structure:
     left:  [intro, reference, articles, tutorials, news]
     right: [search, github]

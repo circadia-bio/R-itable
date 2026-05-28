@@ -9,7 +9,7 @@
 
 ---
 
-> ⚠️ **Ritable is in early development and has not been formally tested.** The API may change without notice, estimation results have not yet been validated against a reference implementation such as SOLAR Eclipse, and the package has not undergone peer review. Use with caution and verify outputs independently before using in any research context.
+> ⚠️ **R-itable is in early development and has not been formally tested.** The API may change without notice, estimation results have not yet been validated against a reference implementation such as SOLAR Eclipse, and the package has not undergone peer review. Use with caution and verify outputs independently before using in any research context.
 
 ---
 
