@@ -1,3 +1,5 @@
+# Builds the pkgdown site and pushes docs/ to the gh-pages branch.
+# main stays clean — no bot commits.
 on:
   push:
     branches: [main, master]
@@ -36,13 +38,13 @@ jobs:
         shell: Rscript {0}
 
       - name: Build site
-        run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
+        run: pkgdown::build_site(new_process = FALSE, install = FALSE)
         shell: Rscript {0}
 
-      - name: Deploy to GitHub pages
+      - name: Deploy to gh-pages branch
         if: github.event_name != 'pull_request'
         uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f
         with:
-          clean: false
+          clean: true
           branch: gh-pages
           folder: docs
