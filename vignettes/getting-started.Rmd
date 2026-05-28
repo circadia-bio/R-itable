@@ -1,8 +1,8 @@
 ---
-title: "Getting started with itable"
+title: "Getting started with R-itable"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Getting started with itable}
+  %\VignetteIndexEntry{Getting started with R-itable}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -20,7 +20,7 @@ library(itable)
 
 ## Overview
 
-**itable** estimates narrow-sense heritability (h²) for quantitative traits in
+**R-itable** estimates narrow-sense heritability (h²) for quantitative traits in
 family cohort studies using a profile-likelihood variance-components approach,
 without requiring SOLAR Eclipse or any proprietary software.
 
@@ -46,13 +46,13 @@ ped <- data.frame(
   sex = c(1, 2, 1, 2, 1, 2, 1, 2)
 )
 
-# Study subjects are the offspring (IDs 5–8)
+# Study subjects are the offspring (IDs 5-8)
 A <- build_grm(ped, study_ids = 5:8)
 round(A, 3)
 ```
 
 The diagonal is 1 for non-inbred individuals. Full siblings share 0.5 of their
-genetic material on average, so off-diagonal entries for sibling pairs ≈ 0.5.
+genetic material on average, so off-diagonal entries for sibling pairs are 0.5.
 
 ---
 
@@ -150,7 +150,7 @@ dat <- read.csv("baependi_analysis_dataset.csv")
 dat$age2    <- dat$age^2
 dat$age_sex <- dat$age * dat$sex_num
 
-# 3. Build GRM once — reuse for all traits
+# 3. Build GRM once -- reuse for all traits
 A <- build_grm(ped,
                study_ids = dat$IID,
                id_col    = "IID",
@@ -179,17 +179,17 @@ res <- herit_batch(
 # 6. Save and plot
 write.csv(res, "table_heritability_brain.csv", row.names = FALSE)
 plot_forest(res, model_filter = "cov2",
-            title = "Brain morphology heritability (age + sex + age²)")
+            title = "Brain morphology heritability (age + sex + age2)")
 ```
 
 ---
 
 ## Citation
 
-If you use **itable** in a publication, please cite:
+If you use **R-itable** in a publication, please cite:
 
 ```
-Veras, L. (2026). itable: Pedigree-Based Heritability Estimation for Family
+Franca, L. (2026). R-itable: Pedigree-Based Heritability Estimation for Family
 Cohort Studies. R package version 0.1.0.
 https://github.com/circadia-bio/R-itable
 ```

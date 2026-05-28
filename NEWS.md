@@ -1,4 +1,4 @@
-## itable 0.1.0  (2026-05)
+## R-itable 0.1.0  (2026-05)
 
 ### New features
 
@@ -9,10 +9,10 @@
 
 * `herit_vc()` — profile-likelihood variance-components heritability estimator
   for a single quantitative trait. Features: inverse-normal transformation,
-  one-sided LRT with chi²(1) boundary correction, profile-likelihood 95% CIs,
-  and zero-variance covariate detection.
+  one-sided LRT with chi-squared(1) boundary correction, profile-likelihood
+  95% CIs, and zero-variance covariate detection.
 
-* `herit_batch()` — iterate `herit_vc()` over many traits × covariate model
+* `herit_batch()` — iterate `herit_vc()` over many traits x covariate model
   combinations; returns a tidy data frame. Includes a cli progress bar.
 
 * `int_transform()` — exported rank-based inverse-normal transformation

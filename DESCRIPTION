@@ -2,9 +2,10 @@ Package: itable
 Title: Pedigree-Based Heritability Estimation for Family Cohort Studies
 Version: 0.1.0
 Authors@R: c(
-    person("Lucas", "Veras", email = "lucas.veras@northumbria.ac.uk",
+    person("Lucas", "França",
+           email = "lucas.franca@northumbria.ac.uk",
            role = c("aut", "cre"),
-           comment = c(ORCID = "0000-0000-0000-0000")))
+           comment = c(ORCID = "0000-0003-0853-1319")))
 Description: Provides profile-likelihood variance-components estimation of
     narrow-sense heritability (h2) for quantitative traits in family cohort
     studies. Additive genetic relationship matrices are built from pedigrees
