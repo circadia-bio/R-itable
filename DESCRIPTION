@@ -15,7 +15,7 @@ Description: Provides profile-likelihood variance-components estimation of
     Batch estimation over many traits returns tidy data frames ready for
     downstream visualisation (forest plots, heatmaps).
 License: MIT + file LICENSE
-URL: https://github.com/circadia-bio/R-itable
+URL: https://r-itable.circadia-lab.uk, https://github.com/circadia-bio/R-itable
 BugReports: https://github.com/circadia-bio/R-itable/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
@@ -30,6 +30,7 @@ Imports:
     cli
 Suggests:
     ggplot2,
+    pkgdown,
     testthat (>= 3.0.0),
     knitr,
     rmarkdown

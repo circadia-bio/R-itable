@@ -1,27 +1,19 @@
-# R
 .Rproj.user
 .Rhistory
 .RData
 .Ruserdata
+*.Rproj
+.DS_Store
 
-# Package build
+# R package build artefacts
+*.Rcheck/
 *.tar.gz
 *.zip
+
+# devtools state
 /doc/
 /Meta/
 
-# roxygen / devtools
-/man/*.Rd.bak
-NAMESPACE.bak
-
-# Tests
-/tests/testthat/_snaps/
-
-# OS
-.DS_Store
-Thumbs.db
-
-# Data (never commit raw subject data)
-data/*.csv
-data/*.rds
-data/*.RData
+# pkgdown — built by CI and pushed to gh-pages, not tracked on main
+docs/
+pkgdown/
