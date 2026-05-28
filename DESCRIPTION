@@ -31,6 +31,7 @@ Imports:
     cli
 Suggests:
     ggplot2,
+    scales,
     pkgdown,
     testthat (>= 3.0.0),
     knitr,

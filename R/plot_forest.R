@@ -16,7 +16,8 @@
 #' @param x_limits Numeric vector of length 2 for the x-axis range.
 #'   Default `c(0, 1)`.
 #'
-#' @return A [ggplot2::ggplot] object.
+#' @return A [ggplot2::ggplot] object. Colours follow the [itable_colours]
+#'   palette by default (pink `#FE9EC7` and blue `#44ACFF` as the primary pair).
 #'
 #' @details
 #' Requires **ggplot2** (listed in `Suggests`). An informative error is thrown
@@ -32,7 +33,7 @@
 #' plot_forest(res, model_filter = "cov2", title = "Adjusted heritability")
 #' }
 #'
-#' @seealso [herit_batch()]
+#' @seealso [herit_batch()], [itable_colours]
 #' @importFrom rlang .data abort
 #' @export
 plot_forest <- function(results,
@@ -78,8 +79,14 @@ plot_forest <- function(results,
     )
   }
 
-  ggplot2::ggplot(df, aes_call) +
-    ggplot2::geom_vline(xintercept = 0, colour = "grey70", linewidth = 0.4) +
+  # Recycle palette across however many levels colour_by has
+  n_levels <- if (!is.null(colour_by) && colour_by %in% names(df))
+    length(unique(df[[colour_by]])) else 0L
+  pal <- rep(unname(itable_colours[c("blue", "pink", "sky", "cream")]),
+             length.out = max(n_levels, 1L))
+
+  p <- ggplot2::ggplot(df, aes_call) +
+    ggplot2::geom_vline(xintercept = 0, colour = "#89D4FF", linewidth = 0.4) +
     ggplot2::geom_errorbar(
       ggplot2::aes(xmin = .data[["ci_lo"]], xmax = .data[["ci_hi"]]),
       orientation = "y", width = 0.3, linewidth = 0.7
@@ -103,8 +110,17 @@ plot_forest <- function(results,
     ggplot2::theme_bw() +
     ggplot2::theme(
       panel.grid.minor  = ggplot2::element_blank(),
-      panel.grid.major  = ggplot2::element_line(colour = "grey92", linewidth = 0.3),
+      panel.grid.major  = ggplot2::element_line(colour = "#89D4FF", linewidth = 0.3),
+      strip.background  = ggplot2::element_rect(fill = "#F9F6C4", colour = "#89D4FF"),
       legend.background = ggplot2::element_blank(),
-      legend.position   = "bottom"
+      legend.position   = "bottom",
+      plot.title        = ggplot2::element_text(colour = "#1E3A5F", face = "bold")
     )
+
+  # Apply brand palette when colouring by a variable
+  if (n_levels > 0L) {
+    p <- p + ggplot2::scale_colour_manual(values = pal)
+  }
+
+  p
 }

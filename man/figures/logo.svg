@@ -1,24 +1,28 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 139" width="120" height="139">
-  <!-- Hex background -->
+  <!-- Hex background: deep navy -->
   <polygon points="60,4 113,34 113,94 60,124 7,94 7,34"
-           fill="#1E3A5F" stroke="#185FA5" stroke-width="3"/>
+           fill="#1E3A5F" stroke="#44ACFF" stroke-width="2.5"/>
 
-  <!-- h² symbol - large and centred -->
-  <text x="30" y="75" font-family="Livvic, Georgia, serif"
-        font-size="38" font-weight="700" fill="#EEF5FF">h</text>
-  <text x="57" y="58" font-family="Livvic, Georgia, serif"
-        font-size="22" font-weight="700" fill="#BA7517">2</text>
+  <!-- h² — pink h, blue superscript 2 -->
+  <text x="28" y="76" font-family="Livvic, Georgia, serif"
+        font-size="42" font-weight="700" fill="#FE9EC7">h</text>
+  <text x="58" y="56" font-family="Livvic, Georgia, serif"
+        font-size="24" font-weight="700" fill="#44ACFF">2</text>
 
-  <!-- Subtle forest-plot tick marks in amber -->
-  <line x1="18" y1="88" x2="102" y2="88" stroke="#185FA5" stroke-width="1" opacity="0.4"/>
-  <line x1="44" y1="84" x2="44" y2="92" stroke="#BA7517" stroke-width="2"/>
-  <circle cx="44" cy="88" r="3.5" fill="#BA7517"/>
-  <line x1="34" y1="88" x2="54" y2="88" stroke="#BA7517" stroke-width="1.5"/>
-  <line x1="70" y1="84" x2="70" y2="92" stroke="#1D9E75" stroke-width="2"/>
-  <circle cx="70" cy="88" r="3.5" fill="#1D9E75"/>
-  <line x1="58" y1="88" x2="82" y2="88" stroke="#1D9E75" stroke-width="1.5"/>
+  <!-- Forest-plot motif: baseline + two CI lines with points -->
+  <line x1="16" y1="92" x2="104" y2="92" stroke="#44ACFF" stroke-width="0.8" opacity="0.35"/>
 
-  <!-- Package name below hex -->
+  <!-- Point 1: pink -->
+  <line x1="36" y1="87" x2="36" y2="97" stroke="#FE9EC7" stroke-width="2"/>
+  <line x1="24" y1="92" x2="48" y2="92" stroke="#FE9EC7" stroke-width="1.5"/>
+  <circle cx="36" cy="92" r="3.5" fill="#FE9EC7"/>
+
+  <!-- Point 2: blue -->
+  <line x1="72" y1="87" x2="72" y2="97" stroke="#44ACFF" stroke-width="2"/>
+  <line x1="58" y1="92" x2="86" y2="92" stroke="#44ACFF" stroke-width="1.5"/>
+  <circle cx="72" cy="92" r="3.5" fill="#44ACFF"/>
+
+  <!-- Package name -->
   <text x="60" y="136" font-family="Livvic, Georgia, serif"
         font-size="13" font-weight="700" fill="#1E3A5F"
         text-anchor="middle" letter-spacing="1">R-itable</text>
