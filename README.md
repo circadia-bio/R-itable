@@ -10,7 +10,7 @@
 
 ## 📖 What is R-itable?
 
-**R-itable** (`library(itable)`) estimates narrow-sense heritability (h²) for
+**R-itable** (`library(Ritable)`) estimates narrow-sense heritability (h²) for
 quantitative traits in pedigree-based family cohort studies. It implements a
 profile-likelihood variance-components approach equivalent to SOLAR Eclipse —
 without any proprietary dependencies, compiled code, or external binaries.
@@ -87,7 +87,7 @@ remotes::install_github("circadia-bio/R-itable")
 ### Basic usage
 
 ```r
-library(itable)
+library(Ritable)
 
 # 1. Build GRM from pedigree
 A <- build_grm(my_pedigree, study_ids = my_data$IID)
@@ -111,7 +111,7 @@ res <- herit_batch(
 plot_forest(res, model_filter = "cov2")
 ```
 
-For a full walkthrough see `vignette("getting-started", package = "itable")`.
+For a full walkthrough see `vignette("getting-started", package = "Ritable")`.
 
 ---
 

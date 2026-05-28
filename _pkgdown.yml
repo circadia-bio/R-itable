@@ -121,7 +121,7 @@ home:
     structure: [links, license, community, citation, authors, dev]
 
 navbar:
-  title: "R-itable"
+  title: "Ritable"
   structure:
     left:  [intro, reference, articles, tutorials, news]
     right: [search, github]
@@ -150,7 +150,7 @@ reference:
   desc: "Helper functions used internally and exported for pipelines."
   contents:
   - int_transform
-  - itable_colours
+  - Ritable_colours
 
 - title: "Visualisation"
   desc: "Forest plots for heritability results."
@@ -160,7 +160,7 @@ reference:
 - title: "Package"
   desc: "Package-level documentation."
   contents:
-  - itable
+  - Ritable
 
 articles:
 - title: "Getting started"

@@ -33,7 +33,8 @@ shown with a filled point; others with an open point. Default \code{0.05}.}
 Default \code{c(0, 1)}.}
 }
 \value{
-A \link[ggplot2:ggplot]{ggplot2::ggplot} object.
+A \link[ggplot2:ggplot]{ggplot2::ggplot} object. Colours follow the \link{Ritable_colours}
+palette by default (pink \verb{#FE9EC7} and blue \verb{#44ACFF} as the primary pair).
 }
 \description{
 Produces a ggplot2 forest plot from the output of \code{\link[=herit_batch]{herit_batch()}} or a
@@ -55,5 +56,5 @@ plot_forest(res, model_filter = "cov2", title = "Adjusted heritability")
 
 }
 \seealso{
-\code{\link[=herit_batch]{herit_batch()}}
+\code{\link[=herit_batch]{herit_batch()}}, \link{Ritable_colours}
 }

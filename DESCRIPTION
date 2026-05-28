@@ -1,4 +1,4 @@
-Package: itable
+Package: Ritable
 Title: Pedigree-Based Heritability Estimation for Family Cohort Studies
 Version: 0.1.0
 Authors@R: c(

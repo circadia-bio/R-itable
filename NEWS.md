@@ -1,4 +1,4 @@
-## R-itable 0.1.0  (2026-05)
+## Ritable 0.1.0  (2026-05)
 
 ### New features
 

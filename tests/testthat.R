@@ -1,2 +1,2 @@
 library(testthat)
-library(itable)
+library(Ritable)

@@ -16,7 +16,7 @@
 #' @param x_limits Numeric vector of length 2 for the x-axis range.
 #'   Default `c(0, 1)`.
 #'
-#' @return A [ggplot2::ggplot] object. Colours follow the [itable_colours]
+#' @return A [ggplot2::ggplot] object. Colours follow the [Ritable_colours]
 #'   palette by default (pink `#FE9EC7` and blue `#44ACFF` as the primary pair).
 #'
 #' @details
@@ -33,7 +33,7 @@
 #' plot_forest(res, model_filter = "cov2", title = "Adjusted heritability")
 #' }
 #'
-#' @seealso [herit_batch()], [itable_colours]
+#' @seealso [herit_batch()], [Ritable_colours]
 #' @importFrom rlang .data abort
 #' @export
 plot_forest <- function(results,
@@ -82,7 +82,7 @@ plot_forest <- function(results,
   # Recycle palette across however many levels colour_by has
   n_levels <- if (!is.null(colour_by) && colour_by %in% names(df))
     length(unique(df[[colour_by]])) else 0L
-  pal <- rep(unname(itable_colours[c("blue", "pink", "sky", "cream")]),
+  pal <- rep(unname(Ritable_colours[c("blue", "pink", "sky", "cream")]),
              length.out = max(n_levels, 1L))
 
   p <- ggplot2::ggplot(df, aes_call) +
