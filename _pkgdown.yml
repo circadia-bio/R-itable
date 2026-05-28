@@ -34,6 +34,7 @@ template:
   includes:
     in_header: |
       <!-- R-itable custom CSS -->
+      <link rel="apple-touch-icon" sizes="180x180" href="favicon.png">
       <style>
         /* -- Navbar -- */
         .navbar {
@@ -119,7 +120,7 @@ template:
       </script>
 
 logo: man/figures/logo.svg
-favicon: man/figures/logo.svg
+favicon: man/figures/favicon.ico
 
 home:
   title: "R-itable — Pedigree-based heritability estimation"
