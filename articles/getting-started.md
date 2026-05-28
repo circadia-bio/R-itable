@@ -27,21 +27,39 @@ The three main steps are:
 
 ## 1. Build the GRM
 
-Your pedigree data frame needs four columns: individual ID, father ID,
-mother ID, and sex (1 = male, 2 = female). Missing parents are coded
-`NA` or `0`.
+[`build_grm()`](https://r-itable.circadia-lab.uk/reference/build_grm.md)
+takes a pedigree data frame and returns an **additive genetic
+relationship matrix** (GRM, also written **A**). The GRM encodes how
+much genetic material any two individuals share due to common ancestry,
+and is the cornerstone of the variance-components model.
+
+The pedigree needs four columns:
+
+| Column | Content                                |
+|--------|----------------------------------------|
+| `id`   | Individual ID                          |
+| `pat`  | Father’s ID (`0` or `NA` for founders) |
+| `mom`  | Mother’s ID (`0` or `NA` for founders) |
+| `sex`  | `1` = male, `2` = female               |
+
+Importantly, the pedigree should contain **everyone** — both the study
+subjects you want to analyse *and* their parents/grandparents
+(founders), even if the founders have no phenotype data. Including
+founders lets `kinship2` trace shared ancestry correctly.
+
+In the example below, IDs 1–4 are two unrelated founder couples. IDs 5–6
+are offspring of couple 1×2, and IDs 7–8 are offspring of couple 3×4.
+The study subjects are IDs 5–8.
 
 ``` r
 
-# Minimal example pedigree (founders + one generation of offspring)
 ped <- data.frame(
   id  = 1:8,
-  pat = c(0, 0, 0, 0, 1, 1, 3, 3),
-  mom = c(0, 0, 0, 0, 2, 2, 4, 4),
+  pat = c(0, 0, 0, 0, 1, 1, 3, 3),  # founders have pat = 0
+  mom = c(0, 0, 0, 0, 2, 2, 4, 4),  # founders have mom = 0
   sex = c(1, 2, 1, 2, 1, 2, 1, 2)
 )
 
-# Study subjects are the offspring (IDs 5-8)
 A <- build_grm(ped, study_ids = 5:8)
 round(A, 3)
 #>     5   6   7   8
@@ -51,9 +69,20 @@ round(A, 3)
 #> 8 0.0 0.0 0.5 1.0
 ```
 
-The diagonal is 1 for non-inbred individuals. Full siblings share 0.5 of
-their genetic material on average, so off-diagonal entries for sibling
-pairs are 0.5.
+Reading the matrix:
+
+- **Diagonal = 1** for non-inbred individuals (each person shares 100%
+  of their genome with themselves).
+- **5 & 6 share 0.5** — they are full siblings (same parents 1×2), so
+  they share on average half their segregating alleles.
+- **7 & 8 share 0.5** — full siblings of couple 3×4, same logic.
+- **5 & 7 share 0** — their parents come from entirely different
+  founders, so they are genetically unrelated in this pedigree.
+
+This block-diagonal pattern is typical of a study with multiple
+independent families. In a real cohort the pedigree is often more
+complex (multi-generation, distant relatives), but the interpretation is
+the same: larger off-diagonal values mean more shared ancestry.
 
 ------------------------------------------------------------------------
 
