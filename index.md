@@ -1,4 +1,4 @@
-# 🧪 R-itable
+# 🧑‍🧑‍🧒‍🧒 R-itable
 
 **Profile-likelihood heritability estimation for family cohort studies —
 no SOLAR required.**
