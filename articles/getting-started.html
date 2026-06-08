@@ -286,20 +286,25 @@ the same: larger off-diagonal values mean more shared ancestry.</p>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> bmi_adj  n=4  h2=0.001 [NA,NA]  p=0.5</span></span>
 <span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">res_unadj</span><span class="op">)</span></span>
-<span><span class="co">#&gt; List of 11</span></span>
-<span><span class="co">#&gt;  $ label     : chr "bmi_unadj"</span></span>
-<span><span class="co">#&gt;  $ trait     : chr "bmi"</span></span>
-<span><span class="co">#&gt;  $ covariates: chr ""</span></span>
-<span><span class="co">#&gt;  $ n         : int 4</span></span>
-<span><span class="co">#&gt;  $ h2        : num 0.001</span></span>
-<span><span class="co">#&gt;  $ se        : num 44.7</span></span>
-<span><span class="co">#&gt;  $ ci_lo     : num 0</span></span>
-<span><span class="co">#&gt;  $ ci_hi     : num 1</span></span>
-<span><span class="co">#&gt;  $ pval      : num 0.5</span></span>
-<span><span class="co">#&gt;  $ sigma2_a  : num 0.00071</span></span>
-<span><span class="co">#&gt;  $ sigma2_e  : num 0.712</span></span></code></pre></div>
+<span><span class="co">#&gt; List of 12</span></span>
+<span><span class="co">#&gt;  $ label         : chr "bmi_unadj"</span></span>
+<span><span class="co">#&gt;  $ trait         : chr "bmi"</span></span>
+<span><span class="co">#&gt;  $ covariates    : chr ""</span></span>
+<span><span class="co">#&gt;  $ n             : int 4</span></span>
+<span><span class="co">#&gt;  $ h2            : num 0.001</span></span>
+<span><span class="co">#&gt;  $ se            : num 44.7</span></span>
+<span><span class="co">#&gt;  $ ci_lo         : num 0</span></span>
+<span><span class="co">#&gt;  $ ci_hi         : num 1</span></span>
+<span><span class="co">#&gt;  $ pval          : num 0.5</span></span>
+<span><span class="co">#&gt;  $ var_covariates: num NA</span></span>
+<span><span class="co">#&gt;  $ sigma2_a      : num 0.00071</span></span>
+<span><span class="co">#&gt;  $ sigma2_e      : num 0.712</span></span></code></pre></div>
 <p>The returned list contains:</p>
 <table class="table">
+<colgroup>
+<col width="35%">
+<col width="65%">
+</colgroup>
 <thead><tr class="header">
 <th>Field</th>
 <th>Description</th>
@@ -324,12 +329,17 @@ the same: larger off-diagonal values mean more shared ancestry.</p>
 <td>One-sided LRT p-value (boundary-corrected)</td>
 </tr>
 <tr class="odd">
-<td><code>sigma2_a</code></td>
-<td>Additive genetic variance</td>
+<td><code>var_covariates</code></td>
+<td>Variance explained by fixed-effect covariates (R²); <code>NA</code>
+for unadjusted models</td>
 </tr>
 <tr class="even">
+<td><code>sigma2_a</code></td>
+<td>Additive genetic variance (σ²_g)</td>
+</tr>
+<tr class="odd">
 <td><code>sigma2_e</code></td>
-<td>Residual variance</td>
+<td>Residual environmental variance (σ²_e)</td>
 </tr>
 </tbody>
 </table>
@@ -360,16 +370,16 @@ tidy data frame.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">res</span></span>
-<span><span class="co">#&gt;       label trait  covariates n    h2      se ci_lo ci_hi pval sigma2_a</span></span>
-<span><span class="co">#&gt; 1 bmi_unadj   bmi             4 0.001 44.7214     0     1  0.5  0.00071</span></span>
-<span><span class="co">#&gt; 2 hdl_unadj   hdl             4 0.001 44.7214     0     1  0.5  0.00071</span></span>
-<span><span class="co">#&gt; 3  bmi_cov1   bmi age+sex_num 4 0.001      NA    NA    NA  0.5  0.00017</span></span>
-<span><span class="co">#&gt; 4  hdl_cov1   hdl age+sex_num 4 0.001      NA    NA    NA  0.5  0.00017</span></span>
-<span><span class="co">#&gt;   sigma2_e</span></span>
-<span><span class="co">#&gt; 1  0.71206</span></span>
-<span><span class="co">#&gt; 2  0.71206</span></span>
-<span><span class="co">#&gt; 3  0.17143</span></span>
-<span><span class="co">#&gt; 4  0.17143</span></span></code></pre></div>
+<span><span class="co">#&gt;       label trait  covariates n    h2      se ci_lo ci_hi pval var_covariates</span></span>
+<span><span class="co">#&gt; 1 bmi_unadj   bmi             4 0.001 44.7214     0     1  0.5             NA</span></span>
+<span><span class="co">#&gt; 2 hdl_unadj   hdl             4 0.001 44.7214     0     1  0.5             NA</span></span>
+<span><span class="co">#&gt; 3  bmi_cov1   bmi age+sex_num 4 0.001      NA    NA    NA  0.5         0.7592</span></span>
+<span><span class="co">#&gt; 4  hdl_cov1   hdl age+sex_num 4 0.001      NA    NA    NA  0.5         0.7592</span></span>
+<span><span class="co">#&gt;   sigma2_a sigma2_e</span></span>
+<span><span class="co">#&gt; 1  0.00071  0.71206</span></span>
+<span><span class="co">#&gt; 2  0.00071  0.71206</span></span>
+<span><span class="co">#&gt; 3  0.00017  0.17143</span></span>
+<span><span class="co">#&gt; 4  0.00017  0.17143</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
@@ -386,13 +396,28 @@ tidy data frame.</p>
 <hr>
 </div>
 <div class="section level2">
-<h2 id="realistic-workflow">5. Realistic workflow<a class="anchor" aria-label="anchor" href="#realistic-workflow"></a>
+<h2 id="colour-palette">5. Colour palette<a class="anchor" aria-label="anchor" href="#colour-palette"></a>
+</h2>
+<p><code>Ritable_colours</code> is exported for consistent figure
+styling across your analysis. It contains the four brand colours used in
+<code><a href="../reference/plot_forest.html">plot_forest()</a></code> by default:</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="va">Ritable_colours</span></span>
+<span><span class="co">#&gt;      pink      blue       sky     cream </span></span>
+<span><span class="co">#&gt; "#FE9EC7" "#44ACFF" "#89D4FF" "#F9F6C4"</span></span></code></pre></div>
+<p>You can use them directly in ggplot2 calls:</p>
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu">ggplot2</span><span class="fu">::</span><span class="fu"><a href="https://ggplot2.tidyverse.org/reference/scale_manual.html" class="external-link">scale_colour_manual</a></span><span class="op">(</span>values <span class="op">=</span> <span class="va">Ritable_colours</span><span class="op">[</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"blue"</span>, <span class="st">"pink"</span><span class="op">)</span><span class="op">]</span><span class="op">)</span></span></code></pre></div>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="realistic-workflow">6. Realistic workflow<a class="anchor" aria-label="anchor" href="#realistic-workflow"></a>
 </h2>
 <p>Here we simulate a small multi-family cohort — 80 nuclear families, 2
 parents + 3 offspring each — with three phenotypes that have different
 true h² values. This mirrors what you would do with real pedigree and
 phenotype CSV files.</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-itable.circadia-lab.uk">Ritable</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># ---- 1. Simulate pedigree ---------------------------------------------------</span></span>
@@ -454,27 +479,27 @@ phenotype CSV files.</p>
 <span><span class="op">)</span></span>
 <span></span>
 <span><span class="va">res</span></span>
-<span><span class="co">#&gt;       label trait       covariates   n     h2     se  ci_lo ci_hi pval sigma2_a</span></span>
-<span><span class="co">#&gt; 1 bmi_unadj   bmi                  240 0.9990 0.1297 0.8400     1    0  0.93477</span></span>
-<span><span class="co">#&gt; 2 sbp_unadj   sbp                  240 0.8055 0.1392 0.5303     1    0  0.80117</span></span>
-<span><span class="co">#&gt; 3 hdl_unadj   hdl                  240 0.7998 0.1394 0.5243     1    0  0.79550</span></span>
-<span><span class="co">#&gt; 4  bmi_cov1   bmi      age+sex_num 240 0.9990 0.1313 0.8331     1    0  0.92785</span></span>
-<span><span class="co">#&gt; 5  sbp_cov1   sbp      age+sex_num 240 0.8012 0.1402 0.5240     1    0  0.79187</span></span>
-<span><span class="co">#&gt; 6  hdl_cov1   hdl      age+sex_num 240 0.8014 0.1395 0.5258     1    0  0.79210</span></span>
-<span><span class="co">#&gt; 7  bmi_cov2   bmi age+sex_num+age2 240 0.9990 0.1318 0.8280     1    0  0.92432</span></span>
-<span><span class="co">#&gt; 8  sbp_cov2   sbp age+sex_num+age2 240 0.7999 0.1402 0.5228     1    0  0.78783</span></span>
-<span><span class="co">#&gt; 9  hdl_cov2   hdl age+sex_num+age2 240 0.8039 0.1405 0.5259     1    0  0.79525</span></span>
-<span><span class="co">#&gt;   sigma2_e</span></span>
-<span><span class="co">#&gt; 1  0.00094</span></span>
-<span><span class="co">#&gt; 2  0.19348</span></span>
-<span><span class="co">#&gt; 3  0.19915</span></span>
-<span><span class="co">#&gt; 4  0.00093</span></span>
-<span><span class="co">#&gt; 5  0.19651</span></span>
-<span><span class="co">#&gt; 6  0.19624</span></span>
-<span><span class="co">#&gt; 7  0.00093</span></span>
-<span><span class="co">#&gt; 8  0.19710</span></span>
-<span><span class="co">#&gt; 9  0.19393</span></span></code></pre></div>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<span><span class="co">#&gt;       label trait       covariates   n     h2     se  ci_lo ci_hi pval</span></span>
+<span><span class="co">#&gt; 1 bmi_unadj   bmi                  240 0.9990 0.1297 0.8400     1    0</span></span>
+<span><span class="co">#&gt; 2 sbp_unadj   sbp                  240 0.8055 0.1392 0.5303     1    0</span></span>
+<span><span class="co">#&gt; 3 hdl_unadj   hdl                  240 0.7998 0.1394 0.5243     1    0</span></span>
+<span><span class="co">#&gt; 4  bmi_cov1   bmi      age+sex_num 240 0.9990 0.1313 0.8331     1    0</span></span>
+<span><span class="co">#&gt; 5  sbp_cov1   sbp      age+sex_num 240 0.8012 0.1402 0.5240     1    0</span></span>
+<span><span class="co">#&gt; 6  hdl_cov1   hdl      age+sex_num 240 0.8014 0.1395 0.5258     1    0</span></span>
+<span><span class="co">#&gt; 7  bmi_cov2   bmi age+sex_num+age2 240 0.9990 0.1318 0.8280     1    0</span></span>
+<span><span class="co">#&gt; 8  sbp_cov2   sbp age+sex_num+age2 240 0.7999 0.1402 0.5228     1    0</span></span>
+<span><span class="co">#&gt; 9  hdl_cov2   hdl age+sex_num+age2 240 0.8039 0.1405 0.5259     1    0</span></span>
+<span><span class="co">#&gt;   var_covariates sigma2_a sigma2_e</span></span>
+<span><span class="co">#&gt; 1             NA  0.93477  0.00094</span></span>
+<span><span class="co">#&gt; 2             NA  0.80117  0.19348</span></span>
+<span><span class="co">#&gt; 3             NA  0.79550  0.19915</span></span>
+<span><span class="co">#&gt; 4         0.0207  0.92785  0.00093</span></span>
+<span><span class="co">#&gt; 5         0.0085  0.79187  0.19651</span></span>
+<span><span class="co">#&gt; 6         0.0067  0.79210  0.19624</span></span>
+<span><span class="co">#&gt; 7         0.0304  0.92432  0.00093</span></span>
+<span><span class="co">#&gt; 8         0.0118  0.78783  0.19710</span></span>
+<span><span class="co">#&gt; 9         0.0091  0.79525  0.19393</span></span></code></pre></div>
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/plot_forest.html">plot_forest</a></span><span class="op">(</span><span class="va">res</span>, model_filter <span class="op">=</span> <span class="st">"cov2"</span>,</span>
 <span>              title <span class="op">=</span> <span class="st">"Heritability estimates (age + sex + age\u00b2)"</span><span class="op">)</span></span>
@@ -483,7 +508,7 @@ phenotype CSV files.</p>
 <hr>
 </div>
 <div class="section level2">
-<h2 id="citation">Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
+<h2 id="citation">7. Citation<a class="anchor" aria-label="anchor" href="#citation"></a>
 </h2>
 <p>If you use <strong>R-itable</strong> in a publication, please
 cite:</p>

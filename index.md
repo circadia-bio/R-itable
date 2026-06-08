@@ -6,6 +6,8 @@ no SOLAR required.**
 [![R](https://img.shields.io/badge/R-%3E%3D4.1-276DC3)](https://cran.r-project.org)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://r-itable.circadia-lab.uk/LICENSE.md)
+[![R CMD
+CHECK](https://github.com/circadia-bio/R-itable/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/circadia-bio/R-itable/actions/workflows/R-CMD-check.yaml)
 [![Lifecycle:
 experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html)
 [![Status](https://img.shields.io/badge/status-early%20development-orange)](https://github.com/circadia-bio/R-itable)
@@ -116,7 +118,9 @@ A <- build_grm(my_pedigree, study_ids = my_data$IID)
 # 2. Single trait
 herit_vc("bmi", grm = A, data = my_data, covs = c("age", "sex"))
 
-# 3. Many traits x models -> tidy data frame
+# 3. Many traits x models -> tidy data frame with columns:
+#    label, trait, covariates, n, h2, se, ci_lo, ci_hi, pval,
+#    var_covariates, sigma2_a, sigma2_e
 res <- herit_batch(
   traits    = c("bmi", "hdl", "systolic_bp"),
   grm       = A,

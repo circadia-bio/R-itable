@@ -102,13 +102,20 @@ A named list with elements:
 
   One-sided LRT p-value with chi-squared(1) boundary correction.
 
+- `var_covariates`:
+
+  Proportion of phenotypic variance explained by fixed-effect covariates
+  (R² on INT-transformed phenotype). `NA` for unadjusted models.
+  Corresponds to the "variance explained" column in Leocadio-Miguel et
+  al. (2025).
+
 - `sigma2_a`:
 
-  Additive genetic variance component.
+  Additive genetic variance (sigma²_g in SOLAR notation).
 
 - `sigma2_e`:
 
-  Residual (environmental) variance component.
+  Residual environmental variance (sigma²_e).
 
 Returns `NULL` if `n < min_n` or if the GRM subset is degenerate.
 

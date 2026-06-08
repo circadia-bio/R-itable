@@ -157,7 +157,7 @@
 </h1>
 </div>
 <p><strong>Profile-likelihood heritability estimation for family cohort studies — no SOLAR required.</strong></p>
-<p><a href="https://cran.r-project.org" class="external-link"><img src="https://img.shields.io/badge/R-%3E%3D4.1-276DC3" alt="R"></a> <a href="./LICENSE.html"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://lifecycle.r-lib.org/articles/stages.html" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://github.com/circadia-bio/R-itable" class="external-link"><img src="https://img.shields.io/badge/status-early%20development-orange" alt="Status"></a></p>
+<p><a href="https://cran.r-project.org" class="external-link"><img src="https://img.shields.io/badge/R-%3E%3D4.1-276DC3" alt="R"></a> <a href="./LICENSE.html"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://github.com/circadia-bio/R-itable/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/circadia-bio/R-itable/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R CMD CHECK"></a> <a href="https://lifecycle.r-lib.org/articles/stages.html" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://github.com/circadia-bio/R-itable" class="external-link"><img src="https://img.shields.io/badge/status-early%20development-orange" alt="Status"></a></p>
 <hr>
 <blockquote>
 <p>⚠️ <strong>R-itable is in early development and has not been formally tested.</strong> The API may change without notice, estimation results have not yet been validated against a reference implementation such as SOLAR Eclipse, and the package has not undergone peer review. Use with caution and verify outputs independently before using in any research context.</p>
@@ -240,7 +240,9 @@
 <span><span class="co"># 2. Single trait</span></span>
 <span><span class="fu"><a href="reference/herit_vc.html">herit_vc</a></span><span class="op">(</span><span class="st">"bmi"</span>, grm <span class="op">=</span> <span class="va">A</span>, data <span class="op">=</span> <span class="va">my_data</span>, covs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span><span class="op">)</span><span class="op">)</span></span>
 <span></span>
-<span><span class="co"># 3. Many traits x models -&gt; tidy data frame</span></span>
+<span><span class="co"># 3. Many traits x models -&gt; tidy data frame with columns:</span></span>
+<span><span class="co">#    label, trait, covariates, n, h2, se, ci_lo, ci_hi, pval,</span></span>
+<span><span class="co">#    var_covariates, sigma2_a, sigma2_e</span></span>
 <span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/herit_batch.html">herit_batch</a></span><span class="op">(</span></span>
 <span>  traits    <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"bmi"</span>, <span class="st">"hdl"</span>, <span class="st">"systolic_bp"</span><span class="op">)</span>,</span>
 <span>  grm       <span class="op">=</span> <span class="va">A</span>,</span>

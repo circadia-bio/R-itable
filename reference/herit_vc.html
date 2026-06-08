@@ -227,11 +227,17 @@ Default <code>0.95</code>.</p></dd>
 <dt><code>pval</code></dt>
 <dd><p>One-sided LRT p-value with chi-squared(1) boundary correction.</p></dd>
 
+<dt><code>var_covariates</code></dt>
+<dd><p>Proportion of phenotypic variance explained by
+fixed-effect covariates (R² on INT-transformed phenotype). <code>NA</code> for
+unadjusted models. Corresponds to the "variance explained" column in
+Leocadio-Miguel et al. (2025).</p></dd>
+
 <dt><code>sigma2_a</code></dt>
-<dd><p>Additive genetic variance component.</p></dd>
+<dd><p>Additive genetic variance (sigma²_g in SOLAR notation).</p></dd>
 
 <dt><code>sigma2_e</code></dt>
-<dd><p>Residual (environmental) variance component.</p></dd>
+<dd><p>Residual environmental variance (sigma²_e).</p></dd>
 
 
 </dl><p>Returns <code>NULL</code> if <code>n &lt; min_n</code> or if the GRM subset is degenerate.</p>
