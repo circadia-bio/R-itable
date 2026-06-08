@@ -119,8 +119,9 @@ The returned list contains:
 | `se` | SE from profile-LL curvature |
 | `ci_lo`, `ci_hi` | 95% profile-likelihood CI |
 | `pval` | One-sided LRT p-value (boundary-corrected) |
-| `sigma2_a` | Additive genetic variance |
-| `sigma2_e` | Residual variance |
+| `var_covariates` | Variance explained by fixed-effect covariates (R²); `NA` for unadjusted models |
+| `sigma2_a` | Additive genetic variance (σ²_g) |
+| `sigma2_e` | Residual environmental variance (σ²_e) |
 
 ---
 
@@ -165,7 +166,24 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 
 ---
 
-## 5. Realistic workflow
+## 5. Colour palette
+
+`Ritable_colours` is exported for consistent figure styling across your
+analysis. It contains the four brand colours used in `plot_forest()` by default:
+
+```{r colours}
+Ritable_colours
+```
+
+You can use them directly in ggplot2 calls:
+
+```{r colours-example, eval=FALSE}
+ggplot2::scale_colour_manual(values = Ritable_colours[c("blue", "pink")])
+```
+
+---
+
+## 6. Realistic workflow
 
 Here we simulate a small multi-family cohort — 80 nuclear families, 2 parents
 + 3 offspring each — with three phenotypes that have different true h² values.
@@ -244,7 +262,7 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 
 ---
 
-## Citation
+## 7. Citation
 
 If you use **R-itable** in a publication, please cite:
 
