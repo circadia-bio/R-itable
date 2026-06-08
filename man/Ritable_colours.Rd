@@ -3,7 +3,7 @@
 \docType{data}
 \name{Ritable_colours}
 \alias{Ritable_colours}
-\title{Ritable colour palette}
+\title{R-itable colour palette}
 \format{
 An object of class \code{character} of length 4.
 }
@@ -12,7 +12,7 @@ Ritable_colours
 }
 \description{
 A named character vector of the four brand colours used throughout
-Ritable figures and documentation.
+R-itable figures and documentation.
 }
 \details{
 \describe{

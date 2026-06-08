@@ -55,8 +55,12 @@ A named list with elements:
 \item{\code{se}}{Standard error from profile-likelihood curvature (Wald).}
 \item{\code{ci_lo}, \code{ci_hi}}{Profile-likelihood confidence interval bounds.}
 \item{\code{pval}}{One-sided LRT p-value with chi-squared(1) boundary correction.}
-\item{\code{sigma2_a}}{Additive genetic variance component.}
-\item{\code{sigma2_e}}{Residual (environmental) variance component.}
+\item{\code{var_covariates}}{Proportion of phenotypic variance explained by
+fixed-effect covariates (R² on INT-transformed phenotype). \code{NA} for
+unadjusted models. Corresponds to the "variance explained" column in
+Leocadio-Miguel et al. (2025).}
+\item{\code{sigma2_a}}{Additive genetic variance (sigma²_g in SOLAR notation).}
+\item{\code{sigma2_e}}{Residual environmental variance (sigma²_e).}
 }
 Returns \code{NULL} if \code{n < min_n} or if the GRM subset is degenerate.
 }

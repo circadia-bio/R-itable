@@ -54,8 +54,12 @@
 #'   \item{`se`}{Standard error from profile-likelihood curvature (Wald).}
 #'   \item{`ci_lo`, `ci_hi`}{Profile-likelihood confidence interval bounds.}
 #'   \item{`pval`}{One-sided LRT p-value with chi-squared(1) boundary correction.}
-#'   \item{`sigma2_a`}{Additive genetic variance component.}
-#'   \item{`sigma2_e`}{Residual (environmental) variance component.}
+#'   \item{`var_covariates`}{Proportion of phenotypic variance explained by
+#'     fixed-effect covariates (R² on INT-transformed phenotype). `NA` for
+#'     unadjusted models. Corresponds to the "variance explained" column in
+#'     Leocadio-Miguel et al. (2025).}
+#'   \item{`sigma2_a`}{Additive genetic variance (sigma²_g in SOLAR notation).}
+#'   \item{`sigma2_e`}{Residual environmental variance (sigma²_e).}
 #' }
 #' Returns `NULL` if `n < min_n` or if the GRM subset is degenerate.
 #'
@@ -83,7 +87,7 @@
 #' }
 #'
 #' @seealso [build_grm()], [herit_batch()], [int_transform()]
-#' @importFrom stats optimize uniroot pchisq qchisq sd complete.cases
+#' @importFrom stats optimize uniroot pchisq qchisq sd complete.cases lm residuals
 #' @importFrom rlang abort warn .data
 #' @importFrom cli cli_alert_success cli_alert_warning
 #' @export
@@ -186,6 +190,17 @@ herit_vc <- function(trait,
   sa    <- h2_hat * sp
   se2   <- (1 - h2_hat) * sp
 
+  # -- Variance explained by covariates (R2 of fixed effects on INT y) --------
+  var_covariates <- if (is.null(covs)) {
+    NA_real_
+  } else {
+    # Fit intercept-only vs full fixed-effects model on INT y
+    ss_tot <- sum((y_int - mean(y_int))^2)
+    fit_ols <- lm(y_int ~ X[, -1])  # X already has intercept in col 1
+    ss_res  <- sum(residuals(fit_ols)^2)
+    round(1 - ss_res / ss_tot, 4)
+  }
+
   # -- LRT (one-sided boundary correction) ------------------------------------
   lrt  <- max(0, 2 * (fit$objective - prof(1e-6)))
   pval <- 0.5 * pchisq(lrt, df = 1, lower.tail = FALSE)
@@ -215,17 +230,18 @@ herit_vc <- function(trait,
   }
 
   list(
-    label      = tag,
-    trait      = trait,
-    covariates = paste(covs, collapse = "+"),
-    n          = n,
-    h2         = round(h2_hat, 4),
-    se         = round(h2_se,  4),
-    ci_lo      = round(ci_lo,  4),
-    ci_hi      = round(ci_hi,  4),
-    pval       = round(pval,   5),
-    sigma2_a   = round(sa,     5),
-    sigma2_e   = round(se2,    5)
+    label          = tag,
+    trait          = trait,
+    covariates     = paste(covs, collapse = "+"),
+    n              = n,
+    h2             = round(h2_hat, 4),
+    se             = round(h2_se,  4),
+    ci_lo          = round(ci_lo,  4),
+    ci_hi          = round(ci_hi,  4),
+    pval           = round(pval,   5),
+    var_covariates = var_covariates,
+    sigma2_a       = round(sa,     5),
+    sigma2_e       = round(se2,    5)
   )
 }
 

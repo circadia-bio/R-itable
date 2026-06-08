@@ -5,7 +5,8 @@ test_that("herit_vc returns a list with expected elements", {
 
   expect_type(res, "list")
   expect_named(res, c("label","trait","covariates","n","h2","se",
-                      "ci_lo","ci_hi","pval","sigma2_a","sigma2_e"))
+                      "ci_lo","ci_hi","pval","var_covariates",
+                      "sigma2_a","sigma2_e"))
 })
 
 test_that("herit_vc h2 is in [0, 1]", {
@@ -55,6 +56,17 @@ test_that("herit_vc with covariates still returns valid h2", {
                   covs = c("age", "sex_num"), verbose = FALSE)
   expect_gte(res$h2, 0)
   expect_lte(res$h2, 1)
+})
+
+test_that("herit_vc var_covariates is NA for unadjusted, numeric for adjusted", {
+  d   <- make_family_data()
+  A   <- build_grm(d$ped, study_ids = d$study_ids)
+  res_u <- herit_vc("trait1", grm = A, data = d$data, verbose = FALSE)
+  res_a <- herit_vc("trait1", grm = A, data = d$data,
+                    covs = c("age", "sex_num"), verbose = FALSE)
+  expect_true(is.na(res_u$var_covariates))
+  expect_gte(res_a$var_covariates, 0)
+  expect_lte(res_a$var_covariates, 1)
 })
 
 test_that("herit_vc sigma2_a + sigma2_e > 0", {

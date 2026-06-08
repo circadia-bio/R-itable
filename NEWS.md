@@ -1,6 +1,11 @@
 ## R-itable 0.1.0  (2026-05)
 
-### New features
+* `herit_vc()` and `herit_batch()` now return `var_covariates`: the proportion
+  of phenotypic variance explained by fixed-effect covariates (R² on the
+  INT-transformed phenotype). This corresponds to the "variance explained"
+  column reported in Leocadio-Miguel et al. (2025, *J Sleep Res*). Returns
+  `NA` for unadjusted models. `sigma2_a` and `sigma2_e` are now documented
+  using SOLAR's sigma²_g / sigma²_e notation for clarity.
 
 * `build_grm()` — build an additive genetic relationship matrix from a
   pedigree data frame via `kinship2::kinship()`. Supports custom column names,
