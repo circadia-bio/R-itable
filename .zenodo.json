@@ -1,0 +1,33 @@
+{
+  "title": "Ritable: Pedigree-Based Heritability Estimation for Family Cohort Studies",
+  "description": "Provides profile-likelihood variance-components estimation of narrow-sense heritability (h2) for quantitative traits in family cohort studies. Additive genetic relationship matrices are built from pedigrees via kinship2. Phenotypes are inverse-normal transformed internally. Likelihood-ratio tests use a one-sided chi-squared boundary correction equivalent to SOLAR Eclipse. Ninety-five percent confidence intervals are derived from the profile likelihood rather than Wald approximations. Batch estimation over many traits returns tidy data frames ready for downstream visualisation.",
+  "creators": [
+    {
+      "name": "França, Lucas",
+      "affiliation": "Northumbria University",
+      "orcid": "0000-0003-0853-1319"
+    },
+    {
+      "name": "Leocadio-Miguel, Mario",
+      "affiliation": "Northumbria University",
+      "orcid": "0000-0002-7248-3529"
+    }
+  ],
+  "license": "MIT",
+  "upload_type": "software",
+  "access_right": "open",
+  "keywords": [
+    "heritability",
+    "pedigree analysis",
+    "family cohort studies",
+    "R package",
+    "Circadia Lab"
+  ],
+  "related_identifiers": [
+    {
+      "identifier": "https://github.com/circadia-bio/R-itable",
+      "relation": "isSupplementTo",
+      "resource_type": "software"
+    }
+  ]
+}
