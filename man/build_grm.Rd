@@ -10,7 +10,8 @@ build_grm(
   id_col = "id",
   pat_col = "pat",
   mom_col = "mom",
-  sex_col = "sex"
+  sex_col = "sex",
+  mz_col = NULL
 )
 }
 \arguments{
@@ -24,6 +25,17 @@ whose sub-matrix should be extracted. Defaults to all IDs in \code{ped_df}.}
 
 \item{id_col, pat_col, mom_col, sex_col}{Column names for the four required
 pedigree fields. Defaults are \code{"id"}, \code{"pat"}, \code{"mom"}, \code{"sex"}.}
+
+\item{mz_col}{Optional column name in \code{ped_df} identifying monozygotic
+twin/multiple groups (e.g. a shared family label present only for MZ
+sets, blank/\code{NA} for everyone else, as in a \code{MZTWIN} column). All
+pairwise combinations of individuals sharing the same non-blank,
+non-\code{NA} value of \code{mz_col} are passed to \code{\link[kinship2:pedigree]{kinship2::pedigree()}} as
+monozygotic (\code{code = 1}), overriding the default full-sibling kinship
+of 0.25 with the correct MZ kinship of 0.5 (A = 1.0). Groups of size
+\eqn{\geq} 3 (e.g. MZ triplets) are supported: every pair within the
+group is marked. \code{NULL} (default) disables this and reproduces prior
+behaviour exactly.}
 }
 \value{
 A symmetric numeric matrix of dimension
@@ -41,6 +53,14 @@ founders), then multiplies by 2 to obtain the additive relationship matrix,
 and finally subsets to \code{study_ids}. Including founders in the pedigree
 ensures that kinship coefficients between study subjects connected only
 through founders are estimated correctly.
+
+For twin cohorts, \code{pat}/\code{mom} are typically synthetic per-pair founder
+labels rather than genotyped individuals; such founders should still be
+present as their own rows in \code{ped_df} (with \code{pat}/\code{mom} set to \code{NA}) so
+that \code{\link[kinship2:pedigree]{kinship2::pedigree()}} can resolve the family structure. Without an
+\code{mz_col}, twins are treated as ordinary full siblings (A = 0.5); supplying
+\code{mz_col} corrects MZ pairs to A = 1.0 while leaving DZ pairs (which
+already have the correct full-sibling kinship) unchanged.
 }
 \examples{
 # Minimal two-generation pedigree: two couples, four offspring
@@ -52,5 +72,13 @@ ped <- data.frame(
 )
 A <- build_grm(ped, study_ids = 5:8)
 round(A, 3)
+
+# With an MZ-twin column: subjects 7 and 8 are MZ (forced to the same sex,
+# since kinship2 requires MZ pairs to share sex -- ordinarily they would
+# already match)
+ped$sex[ped$id \%in\% c(7, 8)] <- 1
+ped$mztwin <- c(NA, NA, NA, NA, NA, NA, "MZ1", "MZ1")
+A_mz <- build_grm(ped, study_ids = 5:8, mz_col = "mztwin")
+round(A_mz, 3)  # A[7,8] = 1.0 instead of 0.5
 
 }

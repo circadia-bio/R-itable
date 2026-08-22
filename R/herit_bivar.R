@@ -17,14 +17,18 @@
 #' @param id_col Name of the individual ID column in `data`. Default `"IID"`.
 #' @param transform Logical. Apply [int_transform()] to both traits before
 #'   fitting. Default `TRUE`.
-#' @param min_n Minimum number of complete observations (non-missing on both
-#'   traits) required. Default `80L`.
+#' @param min_n Minimum number of individuals contributing to the analysis
+#'   sample required (an individual counts if at least one of `trait1`,
+#'   `trait2` is observed -- see Details). Default `80L`.
 #' @param verbose Logical. Print progress via `cli`. Default `TRUE`.
 #'
 #' @return A named list with elements:
 #' \describe{
 #'   \item{`trait1`, `trait2`}{Trait names.}
-#'   \item{`n`}{Sample size after dropping missing values.}
+#'   \item{`n`}{Number of individuals contributing to the analysis (union of
+#'     those with `trait1` and/or `trait2` observed -- see Details).}
+#'   \item{`n_complete`}{Number of individuals with both traits observed.
+#'     Equal to `n` when neither trait has missing data.}
 #'   \item{`h2_1`, `h2_2`}{Heritability of each trait under the joint
 #'     bivariate model.}
 #'   \item{`rhoG`, `rhoE`, `rhoP`}{Genetic, environmental, and derived
@@ -47,24 +51,45 @@
 #' reparametrised scale (logit for `h2`, `atanh` for the correlations, `log`
 #' for the variances) so that all constraints hold automatically.
 #'
-#' As with [herit_ace()], this uses direct numerical ML over the full `2n x
-#' 2n` covariance matrix rather than `herit_vc()`'s eigendecomposition
-#' shortcut, since the cross-trait blocks do not diagonalise jointly with the
-#' within-trait blocks in general. In practice this is optimised by
-#' diagonalising `A` once and reducing every likelihood evaluation to `n`
-#' independent 2x2 blocks (both covariance blocks are linear combinations of
-#' `A` and `I`, so they share `A`'s eigenvectors) -- this is what makes
-#' [herit_bivar_batch()] over many pairs fast.
+#' **Missing data:** if either trait has missing values, individuals missing
+#' exactly one of the two traits are still included in the analysis sample,
+#' contributing their observed trait's marginal likelihood, matching SOLAR
+#' Eclipse's default `UnbalancedTraits` behaviour (individuals are only
+#' excluded if *both* traits, or the ID, are missing). This is both more
+#' statistically appropriate than dropping them (more information used under
+#' the usual MAR assumption) and matches SOLAR numerically much more closely
+#' than a complete-case restriction -- verified on the Gomes et al. dataset,
+#' where a complete-case restriction gave rhoG = -0.879 for a pair with
+#' missing data on one trait, vs SOLAR's -0.638; the unbalanced likelihood
+#' gives -0.787, closer but not exact (the remaining gap on this specific
+#' pair reflects a hard, heavily zero-inflated distribution -- see NEWS.md).
+#' When neither trait has missing data (the common
+#' case), this reduces to the same fast eigenbasis computation as before --
+#' the unbalanced path is only used when needed, since it cannot exploit the
+#' eigenbasis shortcut (the missingness pattern is individual-specific, so
+#' the joint covariance no longer shares a common eigenbasis with `A` across
+#' all n individuals).
+#'
+#' As with [herit_ace()], the unbalanced path uses direct numerical ML over
+#' the full covariance matrix rather than an eigendecomposition shortcut.
 #'
 #' Results are validated against, but not bit-identical to, SOLAR Eclipse
 #' output (differences arise from ML vs SOLAR's exact optimiser and variance
-#' parametrisation). Validated on the Gomes et al. twin dataset: mean
-#' |delta rhoG| ~ 0.05, mean |delta rhoE| ~ 0.02 vs SOLAR, with matching
-#' nominal-significance calls on 29/31 and 31/31 of 31 trait pairs
-#' respectively (see NEWS.md).
+#' parametrisation). Validated on the Gomes et al. twin dataset (31 trait
+#' pairs) with the correct SOLAR-matching inverse-normal transform selection
+#' (see [int_transform()]) and unbalanced-trait handling: mean |delta rhoG| =
+#' 0.012, mean |delta rhoE| = 0.010, median |delta rhoG| = 0.0004, median
+#' |delta rhoE| = 0.0006 -- the typical pair matches SOLAR to 4 decimal
+#' places. 22/31 pairs agree with SOLAR to within 0.002 on both rhoG and
+#' rhoE, and 31/31 agree on nominal significance for both. The remaining
+#' discrepancy is concentrated in one phenotype with an anomalous raw
+#' variance (data-quality issue independent of this package) and two
+#' phenotypes with heavy zero-inflation (>25% tied values), where the
+#' likelihood surface is inherently harder to optimise exactly -- see
+#' NEWS.md for details.
 #'
 #' @seealso [build_grm()], [herit_vc()], [herit_ace()], [herit_bivar_batch()]
-#' @importFrom stats complete.cases pchisq
+#' @importFrom stats complete.cases pchisq var
 #' @importFrom rlang abort
 #' @importFrom cli cli_alert_success cli_alert_warning
 #' @export
@@ -83,7 +108,12 @@ herit_bivar <- function(trait1,
     rlang::abort(c("Column(s) not found in `data`:", paste0("  ", paste(absent, collapse = ", "))))
   }
 
-  dat <- data[stats::complete.cases(data[, needed, drop = FALSE]), needed, drop = FALSE]
+  # An individual is in the analysis sample if the ID is present and at
+  # least one of the two traits is observed (SOLAR's UnbalancedTraits=1
+  # default). This is a superset of the complete-case sample.
+  id_ok  <- !is.na(data[[id_col]])
+  any_ok <- id_ok & (!is.na(data[[trait1]]) | !is.na(data[[trait2]]))
+  dat <- data[any_ok, needed, drop = FALSE]
   n   <- nrow(dat)
   if (n < min_n) {
     if (verbose) cli::cli_alert_warning("Skipping {trait1} x {trait2}: n = {n} < {min_n}.")
@@ -96,15 +126,32 @@ herit_bivar <- function(trait1,
   }
   A <- grm[ids, ids]
 
+  has_y1 <- !is.na(dat[[trait1]])
+  has_y2 <- !is.na(dat[[trait2]])
+  n_complete <- sum(has_y1 & has_y2)
+  balanced <- all(has_y1) && all(has_y2)
+
+  # int_transform() is computed over each trait's own available values,
+  # matching SOLAR's inormal (applied per-trait, independent of the other
+  # trait's missingness).
   y1 <- if (transform) int_transform(dat[[trait1]]) else dat[[trait1]]
   y2 <- if (transform) int_transform(dat[[trait2]]) else dat[[trait2]]
 
-  full <- .fit_bivar_full(y1, y2, A)
-
-  ll_rhoG0 <- .fit_bivar_constrained(y1, y2, A, fix_rhoG = TRUE,  start = full$par, prep = full$prep)
-  ll_rhoE0 <- .fit_bivar_constrained(y1, y2, A, fix_rhoE = TRUE,  start = full$par, prep = full$prep)
-  ll_00    <- .fit_bivar_constrained(y1, y2, A, fix_rhoG = TRUE, fix_rhoE = TRUE,
-                                    start = full$par, prep = full$prep)
+  if (balanced) {
+    full <- .fit_bivar_full(y1, y2, A)
+    ll_rhoG0 <- .fit_bivar_constrained(y1, y2, A, fix_rhoG = TRUE,  start = full$par, prep = full$prep)
+    ll_rhoE0 <- .fit_bivar_constrained(y1, y2, A, fix_rhoE = TRUE,  start = full$par, prep = full$prep)
+    ll_00    <- .fit_bivar_constrained(y1, y2, A, fix_rhoG = TRUE, fix_rhoE = TRUE,
+                                       start = full$par, prep = full$prep)
+  } else {
+    full <- .fit_bivar_unbalanced_full(y1, y2, A, has_y1, has_y2)
+    ll_rhoG0 <- .fit_bivar_unbalanced_constrained(y1, y2, A, has_y1, has_y2,
+                                                  fix_rhoG = TRUE, start = full$par)
+    ll_rhoE0 <- .fit_bivar_unbalanced_constrained(y1, y2, A, has_y1, has_y2,
+                                                  fix_rhoE = TRUE, start = full$par)
+    ll_00    <- .fit_bivar_unbalanced_constrained(y1, y2, A, has_y1, has_y2,
+                                                  fix_rhoG = TRUE, fix_rhoE = TRUE, start = full$par)
+  }
 
   p_rhoG <- stats::pchisq(max(0, 2 * (full$loglik - ll_rhoG0)), df = 1, lower.tail = FALSE)
   p_rhoE <- stats::pchisq(max(0, 2 * (full$loglik - ll_rhoE0)), df = 1, lower.tail = FALSE)
@@ -120,7 +167,7 @@ herit_bivar <- function(trait1,
   }
 
   list(
-    trait1 = trait1, trait2 = trait2, n = n,
+    trait1 = trait1, trait2 = trait2, n = n, n_complete = n_complete,
     h2_1   = round(full$h2_1, 4), h2_2 = round(full$h2_2, 4),
     rhoG   = round(full$rhoG, 4), rhoE = round(full$rhoE, 4), rhoP = round(rhoP, 4),
     p_rhoG = signif(p_rhoG, 5), p_rhoE = signif(p_rhoE, 5), p_rhoP = signif(p_rhoP, 5)
@@ -141,9 +188,9 @@ herit_bivar <- function(trait1,
 #' @param .progress Logical. Show a cli progress bar. Default `TRUE`.
 #'
 #' @return A data frame with one row per successfully fitted pair and columns
-#'   `trait1`, `trait2`, `n`, `h2_1`, `h2_2`, `rhoG`, `rhoE`, `rhoP`,
-#'   `p_rhoG`, `p_rhoE`, `p_rhoP`, `q_rhoG`, `q_rhoE`, `q_rhoP` (BH-adjusted).
-#'   Failed / skipped pairs are silently omitted.
+#'   `trait1`, `trait2`, `n`, `n_complete`, `h2_1`, `h2_2`, `rhoG`, `rhoE`,
+#'   `rhoP`, `p_rhoG`, `p_rhoE`, `p_rhoP`, `q_rhoG`, `q_rhoE`, `q_rhoP`
+#'   (BH-adjusted). Failed / skipped pairs are silently omitted.
 #'
 #' @seealso [herit_bivar()]
 #' @importFrom stats p.adjust

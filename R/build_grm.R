@@ -53,7 +53,10 @@
 #' A <- build_grm(ped, study_ids = 5:8)
 #' round(A, 3)
 #'
-#' # With an MZ-twin column: subjects 7 and 8 are MZ, not ordinary full sibs
+#' # With an MZ-twin column: subjects 7 and 8 are MZ (forced to the same sex,
+#' # since kinship2 requires MZ pairs to share sex -- ordinarily they would
+#' # already match)
+#' ped$sex[ped$id %in% c(7, 8)] <- 1
 #' ped$mztwin <- c(NA, NA, NA, NA, NA, NA, "MZ1", "MZ1")
 #' A_mz <- build_grm(ped, study_ids = 5:8, mz_col = "mztwin")
 #' round(A_mz, 3)  # A[7,8] = 1.0 instead of 0.5

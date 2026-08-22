@@ -124,16 +124,36 @@
 
 .fit_bivar_full <- function(y1, y2, A) {
   prep <- .bivar_eigen_prep(y1, y2, A)
-  starts <- list(c(0, 0, 0, 0, 0, 0), c(0.5, 0.5, 0.5, 0.5, 0, 0), c(-0.5, -0.5, 0.2, 0.2, 0, 0))
+  # Data-driven scale starts: assuming unit variance (log(1)=0) fails badly
+  # for traits that aren't INT-transformed and have a large or small raw
+  # variance (e.g. a raw score in the thousands, or a proportion near 0-1).
+  s1_0 <- log(max(var(y1), 1e-8))
+  s2_0 <- log(max(var(y2), 1e-8))
+  starts <- list(
+    c(0, 0, 0, 0, s1_0, s2_0),
+    c(0.5, 0.5, 0.5, 0.5, s1_0, s2_0),
+    c(-0.5, -0.5, 0.2, 0.2, s1_0, s2_0),
+    c(0, 0, 0, 0, 0, 0)  # retain the old unit-variance start as a fallback
+  )
   best <- NULL
   for (st in starts) {
     op <- tryCatch(
       stats::optim(st, .nll_bivar_eigen, prep = prep, method = "Nelder-Mead",
-                  control = list(maxit = 2000, reltol = 1e-10)),
+                  control = list(maxit = 3000, reltol = 1e-12)),
       error = function(e) NULL
     )
     if (!is.null(op) && (is.null(best) || op$value < best$value)) best <- op
   }
+  # Polish the best candidate with a second Nelder-Mead pass from its own
+  # optimum -- guards against the flat/weakly-identified likelihood surfaces
+  # seen for low-signal trait pairs, where a single pass can stop early.
+  op2 <- tryCatch(
+    stats::optim(best$par, .nll_bivar_eigen, prep = prep, method = "Nelder-Mead",
+                control = list(maxit = 3000, reltol = 1e-13)),
+    error = function(e) NULL
+  )
+  if (!is.null(op2) && op2$value < best$value) best <- op2
+
   h2_1 <- stats::plogis(best$par[1]); h2_2 <- stats::plogis(best$par[2])
   rG   <- tanh(best$par[3]);          rE   <- tanh(best$par[4])
   list(h2_1 = h2_1, h2_2 = h2_2, rhoG = rG, rhoE = rE,
@@ -155,6 +175,98 @@
     par
   }
   op <- stats::optim(start[free_idx], function(p) .nll_bivar_eigen(full_par(p), prep),
+                     method = "Nelder-Mead", control = list(maxit = 2000, reltol = 1e-10))
+  -op$value
+}
+
+# -- Unbalanced bivariate model (SOLAR's default UnbalancedTraits = 1) --------
+# When one trait has missing values, SOLAR's default behaviour is to keep
+# individuals missing exactly one of the two traits in the analysis sample,
+# using their observed trait's marginal contribution to the likelihood,
+# rather than dropping them via a complete-case restriction. This matters
+# for any trait pair where one phenotype has missing data: dropping those
+# individuals both wastes information and, empirically, shifts rhoG/rhoE
+# estimates noticeably (verified against SOLAR ground truth). Unlike the
+# balanced case, the joint covariance's missingness pattern is individual-
+# specific, so this does not reduce to n independent 2x2 eigen-blocks; it
+# uses a general Cholesky-based GLS over the variable-size joint covariance
+# of just the observed trait-slots (fast enough at this sample size; only
+# triggered when there IS missingness in one of the two traits).
+.nll_bivar_unbalanced <- function(par, y1, y2, A, has_y1, has_y2) {
+  h2_1 <- stats::plogis(par[1]); h2_2 <- stats::plogis(par[2])
+  rG   <- tanh(par[3]);          rE   <- tanh(par[4])
+  s1   <- exp(par[5]);           s2   <- exp(par[6])
+  n <- nrow(A)
+  sg1 <- h2_1 * s1; sg2 <- h2_2 * s2
+  se1 <- (1 - h2_1) * s1; se2 <- (1 - h2_2) * s2
+  I <- diag(n)
+  S11 <- sg1 * A + se1 * I
+  S22 <- sg2 * A + se2 * I
+  S12 <- rG * sqrt(sg1 * sg2) * A + rE * sqrt(se1 * se2) * I
+
+  idx1 <- which(has_y1); idx2 <- which(has_y2)
+  Sigma <- rbind(cbind(S11[idx1, idx1, drop = FALSE], S12[idx1, idx2, drop = FALSE]),
+                cbind(t(S12[idx1, idx2, drop = FALSE]), S22[idx2, idx2, drop = FALSE]))
+  ch <- tryCatch(chol(Sigma), error = function(e) NULL)
+  if (is.null(ch)) return(1e10)
+  logdet <- 2 * sum(log(diag(ch)))
+  Sinv   <- chol2inv(ch)
+  yv <- c(y1[idx1], y2[idx2])
+  X  <- cbind(c(rep(1, length(idx1)), rep(0, length(idx2))),
+             c(rep(0, length(idx1)), rep(1, length(idx2))))
+  XtSiX <- t(X) %*% Sinv %*% X
+  beta  <- tryCatch(solve(XtSiX, t(X) %*% Sinv %*% yv), error = function(e) NULL)
+  if (is.null(beta)) return(1e10)
+  resid <- yv - X %*% beta
+  ll <- -0.5 * (logdet + as.numeric(t(resid) %*% Sinv %*% resid) + length(yv) * log(2 * pi))
+  -ll
+}
+
+.fit_bivar_unbalanced_full <- function(y1, y2, A, has_y1, has_y2) {
+  y1z <- y1; y1z[!has_y1] <- 0
+  y2z <- y2; y2z[!has_y2] <- 0
+  s1_0 <- log(max(stats::var(y1[has_y1]), 1e-8))
+  s2_0 <- log(max(stats::var(y2[has_y2]), 1e-8))
+  # Each likelihood evaluation here is a full Cholesky over the unbalanced
+  # joint covariance (no eigenbasis shortcut applies), so it is far more
+  # expensive per-call than the balanced path. Empirically (verified against
+  # the Gomes et al. dataset) these two starts reliably reach the same
+  # optimum as a wider 4-start search at ~2x the speed.
+  starts <- list(
+    c(-0.5, -0.5, 0.2, 0.2, s1_0, s2_0),
+    c(0, 0, 0, 0, 0, 0)
+  )
+  best <- NULL
+  for (st in starts) {
+    op <- tryCatch(
+      stats::optim(st, .nll_bivar_unbalanced, y1 = y1z, y2 = y2z, A = A,
+                  has_y1 = has_y1, has_y2 = has_y2, method = "Nelder-Mead",
+                  control = list(maxit = 3000, reltol = 1e-11)),
+      error = function(e) NULL
+    )
+    if (!is.null(op) && (is.null(best) || op$value < best$value)) best <- op
+  }
+
+  h2_1 <- stats::plogis(best$par[1]); h2_2 <- stats::plogis(best$par[2])
+  rG   <- tanh(best$par[3]);          rE   <- tanh(best$par[4])
+  list(h2_1 = h2_1, h2_2 = h2_2, rhoG = rG, rhoE = rE,
+      loglik = -best$value, par = best$par)
+}
+
+.fit_bivar_unbalanced_constrained <- function(y1, y2, A, has_y1, has_y2,
+                                              fix_rhoG = FALSE, fix_rhoE = FALSE, start) {
+  y1z <- y1; y1z[!has_y1] <- 0
+  y2z <- y2; y2z[!has_y2] <- 0
+  free_idx <- setdiff(seq_len(6), c(if (fix_rhoG) 3, if (fix_rhoE) 4))
+  full_par <- function(p) {
+    par <- numeric(6)
+    par[free_idx] <- p
+    if (fix_rhoG) par[3] <- 0
+    if (fix_rhoE) par[4] <- 0
+    par
+  }
+  op <- stats::optim(start[free_idx],
+                     function(p) .nll_bivar_unbalanced(full_par(p), y1z, y2z, A, has_y1, has_y2),
                      method = "Nelder-Mead", control = list(maxit = 2000, reltol = 1e-10))
   -op$value
 }

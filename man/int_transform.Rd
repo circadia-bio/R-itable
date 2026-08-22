@@ -4,10 +4,17 @@
 \alias{int_transform}
 \title{Inverse-normal (rank-based) transformation}
 \usage{
-int_transform(x, ties = "average")
+int_transform(x, method = c("vdw", "blom"), ties = "average")
 }
 \arguments{
 \item{x}{Numeric vector. \code{NA}s are preserved.}
+
+\item{method}{Which INT formula to use. \code{"vdw"} (default) is the
+Van der Waerden (1952) transformation, \verb{\\Phi^\{-1\}(r_i / (n+1))}, which
+is what SOLAR Eclipse's \code{inormal} command actually uses. \code{"blom"} is
+the Blom (1958) transformation, \verb{\\Phi^\{-1\}((r_i - 0.5) / n)}, used by
+R-itable prior to this fix under the (incorrect) belief that it
+matched SOLAR.}
 
 \item{ties}{Method passed to \code{\link[base:rank]{base::rank()}}. Default \code{"average"}.}
 }
@@ -20,16 +27,26 @@ Applies a rank-based inverse-normal transformation (INT) to a numeric
 vector, placing empirical quantiles onto a standard normal scale.
 }
 \details{
-The Blom-style formula used is:
+For \code{method = "vdw"} (default):
+\deqn{\Phi^{-1}\!\left(\frac{r_i}{n+1}\right)}
+For \code{method = "blom"}:
 \deqn{\Phi^{-1}\!\left(\frac{r_i - 0.5}{n}\right)}
 where \eqn{r_i} is the rank of observation \eqn{i} and \eqn{n} is the
-number of non-missing observations. This is the standard transformation used
-in SOLAR Eclipse and most variance-components heritability software.
+number of non-missing observations.
+
+Van der Waerden is SOLAR Eclipse's actual \code{inormal} formula (confirmed
+against SOLAR's documentation and independent technical references); it
+is the default here so that \code{\link[=herit_vc]{herit_vc()}}, \code{\link[=herit_ace]{herit_ace()}}, and
+\code{\link[=herit_bivar]{herit_bivar()}} match SOLAR's convention out of the box. \code{"blom"} is
+retained as an option for continuity with earlier R-itable versions and
+for users who specifically want that formula for other reasons. The two
+formulas agree closely for moderate-to-large n and differ more near the
+extremes of small samples or heavily tied data.
 }
 \examples{
 set.seed(1)
 x <- rexp(200, rate = 0.5)   # right-skewed
 hist(x,              main = "Raw")
-hist(int_transform(x), main = "INT")
+hist(int_transform(x), main = "INT (Van der Waerden)")
 
 }
