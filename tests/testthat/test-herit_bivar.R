@@ -13,8 +13,15 @@ test_that("herit_bivar returns a list with expected elements", {
   res <- herit_bivar("trait1", "trait2", s$A, s$dat, id_col = "IID",
                      min_n = 30, verbose = FALSE)
   expect_type(res, "list")
-  expect_named(res, c("trait1", "trait2", "n", "h2_1", "h2_2",
+  expect_named(res, c("trait1", "trait2", "n", "n_complete", "h2_1", "h2_2",
                       "rhoG", "rhoE", "rhoP", "p_rhoG", "p_rhoE", "p_rhoP"))
+})
+
+test_that("herit_bivar n equals n_complete when neither trait has missing data", {
+  s   <- helper_bivar_setup()
+  res <- herit_bivar("trait1", "trait2", s$A, s$dat, id_col = "IID",
+                     min_n = 30, verbose = FALSE)
+  expect_equal(res$n, res$n_complete)
 })
 
 test_that("herit_bivar correlations are in [-1, 1]", {
@@ -98,4 +105,39 @@ test_that("herit_bivar_batch q-values are >= raw p-values (BH correction)", {
   res <- herit_bivar_batch(pairs, s$A, s$dat, id_col = "IID", min_n = 30, .progress = FALSE)
   expect_true(all(res$q_rhoG >= res$p_rhoG - 1e-8))
   expect_true(all(res$q_rhoE >= res$p_rhoE - 1e-8))
+})
+
+# -- Unbalanced traits: one trait has missing data ---------------------------
+
+test_that("herit_bivar keeps individuals missing exactly one trait (n > n_complete)", {
+  s <- helper_bivar_setup()
+  dat_na <- s$dat
+  dat_na$trait2[1:5] <- NA  # 5 individuals now missing only trait2
+  res <- herit_bivar("trait1", "trait2", s$A, dat_na, id_col = "IID",
+                     min_n = 30, verbose = FALSE)
+  expect_equal(res$n, nrow(s$dat))
+  expect_equal(res$n_complete, nrow(s$dat) - 5)
+  expect_gt(res$n, res$n_complete)
+})
+
+test_that("herit_bivar unbalanced path still returns valid ranges", {
+  s <- helper_bivar_setup()
+  dat_na <- s$dat
+  dat_na$trait2[1:5] <- NA
+  res <- herit_bivar("trait1", "trait2", s$A, dat_na, id_col = "IID",
+                     min_n = 30, verbose = FALSE)
+  expect_gte(res$h2_1, 0); expect_lte(res$h2_1, 1)
+  expect_gte(res$h2_2, 0); expect_lte(res$h2_2, 1)
+  expect_gte(res$rhoG, -1); expect_lte(res$rhoG, 1)
+  expect_gte(res$rhoE, -1); expect_lte(res$rhoE, 1)
+})
+
+test_that("herit_bivar excludes individuals missing both traits", {
+  s <- helper_bivar_setup()
+  dat_na <- s$dat
+  dat_na$trait1[1:3] <- NA
+  dat_na$trait2[1:3] <- NA  # missing BOTH -> should be fully excluded
+  res <- herit_bivar("trait1", "trait2", s$A, dat_na, id_col = "IID",
+                     min_n = 30, verbose = FALSE)
+  expect_equal(res$n, nrow(s$dat) - 3)
 })
