@@ -12,6 +12,16 @@
 #'   whose sub-matrix should be extracted. Defaults to all IDs in `ped_df`.
 #' @param id_col,pat_col,mom_col,sex_col Column names for the four required
 #'   pedigree fields. Defaults are `"id"`, `"pat"`, `"mom"`, `"sex"`.
+#' @param mz_col Optional column name in `ped_df` identifying monozygotic
+#'   twin/multiple groups (e.g. a shared family label present only for MZ
+#'   sets, blank/`NA` for everyone else, as in a `MZTWIN` column). All
+#'   pairwise combinations of individuals sharing the same non-blank,
+#'   non-`NA` value of `mz_col` are passed to [kinship2::pedigree()] as
+#'   monozygotic (`code = 1`), overriding the default full-sibling kinship
+#'   of 0.25 with the correct MZ kinship of 0.5 (A = 1.0). Groups of size
+#'   \eqn{\geq} 3 (e.g. MZ triplets) are supported: every pair within the
+#'   group is marked. `NULL` (default) disables this and reproduces prior
+#'   behaviour exactly.
 #'
 #' @return A symmetric numeric matrix of dimension
 #'   `length(study_ids) x length(study_ids)`, with diagonal entries equal to
@@ -24,6 +34,14 @@
 #' ensures that kinship coefficients between study subjects connected only
 #' through founders are estimated correctly.
 #'
+#' For twin cohorts, `pat`/`mom` are typically synthetic per-pair founder
+#' labels rather than genotyped individuals; such founders should still be
+#' present as their own rows in `ped_df` (with `pat`/`mom` set to `NA`) so
+#' that [kinship2::pedigree()] can resolve the family structure. Without an
+#' `mz_col`, twins are treated as ordinary full siblings (A = 0.5); supplying
+#' `mz_col` corrects MZ pairs to A = 1.0 while leaving DZ pairs (which
+#' already have the correct full-sibling kinship) unchanged.
+#'
 #' @examples
 #' # Minimal two-generation pedigree: two couples, four offspring
 #' ped <- data.frame(
@@ -35,15 +53,21 @@
 #' A <- build_grm(ped, study_ids = 5:8)
 #' round(A, 3)
 #'
+#' # With an MZ-twin column: subjects 7 and 8 are MZ, not ordinary full sibs
+#' ped$mztwin <- c(NA, NA, NA, NA, NA, NA, "MZ1", "MZ1")
+#' A_mz <- build_grm(ped, study_ids = 5:8, mz_col = "mztwin")
+#' round(A_mz, 3)  # A[7,8] = 1.0 instead of 0.5
+#'
 #' @importFrom kinship2 pedigree kinship
-#' @importFrom utils head
+#' @importFrom utils head combn
 #' @export
 build_grm <- function(ped_df,
                       study_ids = NULL,
                       id_col    = "id",
                       pat_col   = "pat",
                       mom_col   = "mom",
-                      sex_col   = "sex") {
+                      sex_col   = "sex",
+                      mz_col    = NULL) {
 
   # -- Input checks -----------------------------------------------------------
   required <- c(id_col, pat_col, mom_col, sex_col)
@@ -55,15 +79,23 @@ build_grm <- function(ped_df,
       "i" = "Set `id_col`, `pat_col`, `mom_col`, `sex_col` to match your data."
     ))
   }
+  if (!is.null(mz_col) && !mz_col %in% names(ped_df)) {
+    rlang::abort(paste0("`mz_col` column '", mz_col, "' not found in `ped_df`."))
+  }
 
   ids <- ped_df[[id_col]]
   pat <- ped_df[[pat_col]]
   mom <- ped_df[[mom_col]]
   sex <- ped_df[[sex_col]]
 
-  # Coerce parents: NA / missing -> 0
-  pat[is.na(pat)] <- 0L
-  mom[is.na(mom)] <- 0L
+  # Coerce blank-string missing parents to NA. kinship2::pedigree() accepts
+  # NA for founders' parents regardless of whether `id` is numeric or
+  # character (verified equivalent to the numeric-only `0` convention used
+  # by earlier versions of this function), so NA is used uniformly here.
+  # This matters for cohorts (e.g. twin studies) where `pat`/`mom` are
+  # character founder labels rather than numeric IDs.
+  pat[!is.na(pat) & pat == ""] <- NA
+  mom[!is.na(mom) & mom == ""] <- NA
 
   # Coerce sex: must be 1 or 2
   sex_num <- suppressWarnings(as.integer(sex))
@@ -77,11 +109,37 @@ build_grm <- function(ped_df,
     sex_num[bad_sex] <- 1L
   }
 
+  # -- MZ-twin relation matrix --------------------------------------------------
+  relation <- NULL
+  if (!is.null(mz_col)) {
+    mz_grp <- ped_df[[mz_col]]
+    grp    <- split(ids, mz_grp)
+    grp    <- grp[!is.na(names(grp)) & trimws(names(grp)) != ""]
+    grp    <- Filter(function(g) length(g) >= 2, grp)
+    if (length(grp)) {
+      pair_mat <- do.call(rbind, lapply(grp, function(g) t(utils::combn(g, 2))))
+      relation <- data.frame(id1 = pair_mat[, 1], id2 = pair_mat[, 2], code = 1)
+    } else {
+      rlang::warn(paste0(
+        "`mz_col` = '", mz_col, "' had no groups of size >= 2; ",
+        "no MZ relatedness was applied."
+      ))
+    }
+  }
+
   # -- Build pedigree & kinship -----------------------------------------------
-  ped  <- kinship2::pedigree(id    = ids,
-                             dadid = pat,
-                             momid = mom,
-                             sex   = sex_num)
+  ped  <- if (is.null(relation)) {
+    kinship2::pedigree(id    = ids,
+                       dadid = pat,
+                       momid = mom,
+                       sex   = sex_num)
+  } else {
+    kinship2::pedigree(id       = ids,
+                       dadid    = pat,
+                       momid    = mom,
+                       sex      = sex_num,
+                       relation = relation)
+  }
   phi2 <- 2 * kinship2::kinship(ped)
 
   # -- Subset to study subjects -----------------------------------------------
