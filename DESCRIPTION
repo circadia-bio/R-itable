@@ -29,7 +29,6 @@ URL: https://r-itable.circadia-lab.uk, https://github.com/circadia-bio/R-itable
 BugReports: https://github.com/circadia-bio/R-itable/issues
 Encoding: UTF-8
 Roxygen: list(markdown = TRUE)
-RoxygenNote: 7.3.2
 Depends:
     R (>= 4.1.0)
 Imports:
@@ -47,3 +46,4 @@ Suggests:
     rmarkdown
 Config/testthat/edition: 3
 VignetteBuilder: knitr
+Config/roxygen2/version: 8.0.0

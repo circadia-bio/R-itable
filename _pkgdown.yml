@@ -153,15 +153,27 @@ navbar:
 
 reference:
 - title: "Genetic relationship matrix"
-  desc: "Build the additive GRM from a pedigree data frame."
+  desc: "Build the additive GRM (and household matrix) from a pedigree data frame."
   contents:
   - build_grm
+  - build_household
 
 - title: "Heritability estimation"
   desc: "Single-trait and batch profile-likelihood VC estimation."
   contents:
   - herit_vc
   - herit_batch
+
+- title: "Household effects & twin ACE models"
+  desc: "A vs C identifiability for family and twin cohorts."
+  contents:
+  - herit_ace
+
+- title: "Bivariate genetic/environmental correlation"
+  desc: "Genetic and environmental correlation between trait pairs."
+  contents:
+  - herit_bivar
+  - herit_bivar_batch
 
 - title: "Utilities"
   desc: "Helper functions used internally and exported for pipelines."
