@@ -13,7 +13,8 @@ build_grm(
   id_col = "id",
   pat_col = "pat",
   mom_col = "mom",
-  sex_col = "sex"
+  sex_col = "sex",
+  mz_col = NULL
 )
 ```
 
@@ -35,6 +36,20 @@ build_grm(
   Column names for the four required pedigree fields. Defaults are
   `"id"`, `"pat"`, `"mom"`, `"sex"`.
 
+- mz_col:
+
+  Optional column name in `ped_df` identifying monozygotic twin/multiple
+  groups (e.g. a shared family label present only for MZ sets,
+  blank/`NA` for everyone else, as in a `MZTWIN` column). All pairwise
+  combinations of individuals sharing the same non-blank, non-`NA` value
+  of `mz_col` are passed to
+  [`kinship2::pedigree()`](https://rdrr.io/pkg/kinship2/man/pedigree.html)
+  as monozygotic (`code = 1`), overriding the default full-sibling
+  kinship of 0.25 with the correct MZ kinship of 0.5 (A = 1.0). Groups
+  of size \\\geq\\ 3 (e.g. MZ triplets) are supported: every pair within
+  the group is marked. `NULL` (default) disables this and reproduces
+  prior behaviour exactly.
+
 ## Value
 
 A symmetric numeric matrix of dimension
@@ -50,6 +65,16 @@ obtain the additive relationship matrix, and finally subsets to
 `study_ids`. Including founders in the pedigree ensures that kinship
 coefficients between study subjects connected only through founders are
 estimated correctly.
+
+For twin cohorts, `pat`/`mom` are typically synthetic per-pair founder
+labels rather than genotyped individuals; such founders should still be
+present as their own rows in `ped_df` (with `pat`/`mom` set to `NA`) so
+that
+[`kinship2::pedigree()`](https://rdrr.io/pkg/kinship2/man/pedigree.html)
+can resolve the family structure. Without an `mz_col`, twins are treated
+as ordinary full siblings (A = 0.5); supplying `mz_col` corrects MZ
+pairs to A = 1.0 while leaving DZ pairs (which already have the correct
+full-sibling kinship) unchanged.
 
 ## Examples
 
@@ -68,4 +93,17 @@ round(A, 3)
 #> 6 0.5 1.0 0.0 0.0
 #> 7 0.0 0.0 1.0 0.5
 #> 8 0.0 0.0 0.5 1.0
+
+# With an MZ-twin column: subjects 7 and 8 are MZ (forced to the same sex,
+# since kinship2 requires MZ pairs to share sex -- ordinarily they would
+# already match)
+ped$sex[ped$id %in% c(7, 8)] <- 1
+ped$mztwin <- c(NA, NA, NA, NA, NA, NA, "MZ1", "MZ1")
+A_mz <- build_grm(ped, study_ids = 5:8, mz_col = "mztwin")
+round(A_mz, 3)  # A[7,8] = 1.0 instead of 0.5
+#>     5   6 7 8
+#> 5 1.0 0.5 0 0
+#> 6 0.5 1.0 0 0
+#> 7 0.0 0.0 1 1
+#> 8 0.0 0.0 1 1
 ```

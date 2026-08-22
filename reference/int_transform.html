@@ -90,7 +90,7 @@ vector, placing empirical quantiles onto a standard normal scale."><meta propert
 
     <a class="navbar-brand me-2" href="../index.html">Ritable</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -133,7 +133,7 @@ vector, placing empirical quantiles onto a standard normal scale.</p>
 
     <div class="section level2">
     <h2 id="ref-usage">Usage<a class="anchor" aria-label="anchor" href="#ref-usage"></a></h2>
-    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">int_transform</span><span class="op">(</span><span class="va">x</span>, ties <span class="op">=</span> <span class="st">"average"</span><span class="op">)</span></span></code></pre></div>
+    <div class="sourceCode"><pre class="sourceCode r"><code><span><span class="fu">int_transform</span><span class="op">(</span><span class="va">x</span>, method <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"vdw"</span>, <span class="st">"blom"</span><span class="op">)</span>, ties <span class="op">=</span> <span class="st">"average"</span><span class="op">)</span></span></code></pre></div>
     </div>
 
     <div class="section level2">
@@ -142,6 +142,15 @@ vector, placing empirical quantiles onto a standard normal scale.</p>
 
 <dl><dt id="arg-x">x<a class="anchor" aria-label="anchor" href="#arg-x"></a></dt>
 <dd><p>Numeric vector. <code>NA</code>s are preserved.</p></dd>
+
+
+<dt id="arg-method">method<a class="anchor" aria-label="anchor" href="#arg-method"></a></dt>
+<dd><p>Which INT formula to use. <code>"vdw"</code> (default) is the
+Van der Waerden (1952) transformation, <code>\Phi^{-1}(r_i / (n+1))</code>, which
+is what SOLAR Eclipse's <code>inormal</code> command actually uses. <code>"blom"</code> is
+the Blom (1958) transformation, <code>\Phi^{-1}((r_i - 0.5) / n)</code>, used by
+R-itable prior to this fix under the (incorrect) belief that it
+matched SOLAR.</p></dd>
 
 
 <dt id="arg-ties">ties<a class="anchor" aria-label="anchor" href="#arg-ties"></a></dt>
@@ -155,11 +164,20 @@ positions and non-missing values transformed to approximate normality.</p>
     </div>
     <div class="section level2">
     <h2 id="details">Details<a class="anchor" aria-label="anchor" href="#details"></a></h2>
-    <p>The Blom-style formula used is:
+    <p>For <code>method = "vdw"</code> (default):
+$$\Phi^{-1}\!\left(\frac{r_i}{n+1}\right)$$
+For <code>method = "blom"</code>:
 $$\Phi^{-1}\!\left(\frac{r_i - 0.5}{n}\right)$$
 where \(r_i\) is the rank of observation \(i\) and \(n\) is the
-number of non-missing observations. This is the standard transformation used
-in SOLAR Eclipse and most variance-components heritability software.</p>
+number of non-missing observations.</p>
+<p>Van der Waerden is SOLAR Eclipse's actual <code>inormal</code> formula (confirmed
+against SOLAR's documentation and independent technical references); it
+is the default here so that <code><a href="herit_vc.html">herit_vc()</a></code>, <code><a href="herit_ace.html">herit_ace()</a></code>, and
+<code><a href="herit_bivar.html">herit_bivar()</a></code> match SOLAR's convention out of the box. <code>"blom"</code> is
+retained as an option for continuity with earlier R-itable versions and
+for users who specifically want that formula for other reasons. The two
+formulas agree closely for moderate-to-large n and differ more near the
+extremes of small samples or heavily tied data.</p>
     </div>
 
     <div class="section level2">
@@ -168,7 +186,7 @@ in SOLAR Eclipse and most variance-components heritability software.</p>
 <span class="r-in"><span><span class="va">x</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/stats/Exponential.html" class="external-link">rexp</a></span><span class="op">(</span><span class="fl">200</span>, rate <span class="op">=</span> <span class="fl">0.5</span><span class="op">)</span>   <span class="co"># right-skewed</span></span></span>
 <span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="va">x</span>,              main <span class="op">=</span> <span class="st">"Raw"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="int_transform-1.png" alt="" width="700" height="433"></span>
-<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="fu">int_transform</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, main <span class="op">=</span> <span class="st">"INT"</span><span class="op">)</span></span></span>
+<span class="r-in"><span><span class="fu"><a href="https://rdrr.io/r/graphics/hist.html" class="external-link">hist</a></span><span class="op">(</span><span class="fu">int_transform</span><span class="op">(</span><span class="va">x</span><span class="op">)</span>, main <span class="op">=</span> <span class="st">"INT (Van der Waerden)"</span><span class="op">)</span></span></span>
 <span class="r-plt img"><img src="int_transform-2.png" alt="" width="700" height="433"></span>
 <span class="r-in"><span></span></span>
 </code></pre></div>

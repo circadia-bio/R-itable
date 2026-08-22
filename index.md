@@ -42,6 +42,19 @@ get results you can trace back to first principles.
 - 🔬 **Profile-likelihood VC estimator** — eigendecomposition of the
   GRM, 1-D optimisation, exact LRT with one-sided χ²(1) boundary
   correction (matching SOLAR).
+- 👯 **Twin cohorts** — `build_grm(mz_col = ...)` gives monozygotic
+  pairs (or larger groups) the correct kinship of 1.0, instead of the
+  ordinary full-sibling 0.5.
+- 🏠 **Household/common-environment effects** —
+  [`herit_ace()`](https://r-itable.circadia-lab.uk/reference/herit_ace.md)
+  fits nested sporadic/AE/CE/ACE models and tests whether A and C are
+  jointly identifiable in your sample.
+- 🔗 **Bivariate genetic/environmental correlations** —
+  [`herit_bivar()`](https://r-itable.circadia-lab.uk/reference/herit_bivar.md)
+  /
+  [`herit_bivar_batch()`](https://r-itable.circadia-lab.uk/reference/herit_bivar_batch.md)
+  estimate rhoG, rhoE, and derived rhoP between trait pairs, with LRTs
+  and Benjamini-Hochberg FDR correction across a batch.
 - 📐 **Profile-likelihood CIs** — not Wald ±1.96 SE; proper asymmetric
   intervals via [`uniroot()`](https://rdrr.io/r/stats/uniroot.html).
 - 🔄 **INT transformation** — inverse-normal transform applied
@@ -65,17 +78,24 @@ get results you can trace back to first principles.
     R-itable/
     ├── R/
     │   ├── Ritable-package.R      # package-level docs and colour palette
-    │   ├── build_grm.R            # build additive GRM from pedigree
+    │   ├── build_grm.R            # build additive GRM from pedigree (incl. MZ twins)
+    │   ├── build_household.R      # build household/shared-environment matrix
     │   ├── int_transform.R        # rank-based inverse-normal transform
     │   ├── herit_vc.R             # single-trait VC estimator
     │   ├── herit_batch.R          # batch wrapper
+    │   ├── herit_ace.R            # A vs C identifiability (sporadic/AE/CE/ACE)
+    │   ├── herit_bivar.R          # bivariate genetic/environmental correlation
+    │   ├── vc_utils.R             # internal general-ML helpers (ACE, bivariate)
     │   └── plot_forest.R          # ggplot2 forest plot
     ├── tests/testthat/
-    │   ├── helper-fixtures.R      # shared synthetic pedigree/data
+    │   ├── helper-fixtures.R      # shared synthetic pedigree/twin/data fixtures
     │   ├── test-build_grm.R
+    │   ├── test-build_household.R
     │   ├── test-int_transform.R
     │   ├── test-herit_vc.R
-    │   └── test-herit_batch.R
+    │   ├── test-herit_batch.R
+    │   ├── test-herit_ace.R
+    │   └── test-herit_bivar.R
     ├── vignettes/
     │   └── getting-started.Rmd
     ├── data-raw/
@@ -134,6 +154,28 @@ res <- herit_batch(
 
 # 4. Forest plot
 plot_forest(res, model_filter = "cov2")
+```
+
+### Twin cohorts: MZ relatedness, household effects, bivariate correlations
+
+``` r
+
+# GRM with MZ-twin relatedness override (mztwin_col groups MZ pairs/triplets)
+A <- build_grm(twin_pedigree, study_ids = twin_data$IID, mz_col = "mztwin")
+C <- build_household(twin_pedigree$hhid, twin_pedigree$id)
+
+# A vs C identifiability: sporadic / AE / CE / full ACE
+herit_ace("anxiety_score", grm = A, household = C, data = twin_data, id_col = "IID")
+
+# Bivariate genetic/environmental correlation between two traits
+herit_bivar("anxiety_score", "depression_score", grm = A, data = twin_data, id_col = "IID")
+
+# Many trait pairs at once, with BH-FDR correction per correlation type
+pairs <- data.frame(
+  trait1 = c("anxiety_score", "depression_score"),
+  trait2 = c("sleep_quality", "sleep_quality")
+)
+herit_bivar_batch(pairs, grm = A, data = twin_data, id_col = "IID")
 ```
 
 For a full walkthrough see

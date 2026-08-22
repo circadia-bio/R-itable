@@ -123,8 +123,8 @@ str(res_unadj)
 #>  $ ci_hi         : num 1
 #>  $ pval          : num 0.5
 #>  $ var_covariates: num NA
-#>  $ sigma2_a      : num 0.00071
-#>  $ sigma2_e      : num 0.712
+#>  $ sigma2_a      : num 0.00039
+#>  $ sigma2_e      : num 0.386
 ```
 
 The returned list contains:
@@ -169,15 +169,15 @@ res <- herit_batch(
 
 res
 #>       label trait  covariates n    h2      se ci_lo ci_hi pval var_covariates
-#> 1 bmi_unadj   bmi             4 0.001 44.7214     0     1  0.5             NA
-#> 2 hdl_unadj   hdl             4 0.001 44.7214     0     1  0.5             NA
-#> 3  bmi_cov1   bmi age+sex_num 4 0.001      NA    NA    NA  0.5         0.7592
-#> 4  hdl_cov1   hdl age+sex_num 4 0.001      NA    NA    NA  0.5         0.7592
+#> 1 bmi_unadj   bmi             4 0.001 44.7184     0     1  0.5             NA
+#> 2 hdl_unadj   hdl             4 0.001 44.7184     0     1  0.5             NA
+#> 3  bmi_cov1   bmi age+sex_num 4 0.001      NA    NA    NA  0.5         0.7778
+#> 4  hdl_cov1   hdl age+sex_num 4 0.001      NA    NA    NA  0.5         0.7778
 #>   sigma2_a sigma2_e
-#> 1  0.00071  0.71206
-#> 2  0.00071  0.71206
-#> 3  0.00017  0.17143
-#> 4  0.00017  0.17143
+#> 1  0.00039  0.38606
+#> 2  0.00039  0.38606
+#> 3  0.00009  0.08576
+#> 4  0.00009  0.08576
 ```
 
 ------------------------------------------------------------------------
@@ -292,25 +292,25 @@ res <- herit_batch(
 
 res
 #>       label trait       covariates   n     h2     se  ci_lo ci_hi pval
-#> 1 bmi_unadj   bmi                  240 0.9990 0.1297 0.8400     1    0
-#> 2 sbp_unadj   sbp                  240 0.8055 0.1392 0.5303     1    0
-#> 3 hdl_unadj   hdl                  240 0.7998 0.1394 0.5243     1    0
-#> 4  bmi_cov1   bmi      age+sex_num 240 0.9990 0.1313 0.8331     1    0
-#> 5  sbp_cov1   sbp      age+sex_num 240 0.8012 0.1402 0.5240     1    0
-#> 6  hdl_cov1   hdl      age+sex_num 240 0.8014 0.1395 0.5258     1    0
-#> 7  bmi_cov2   bmi age+sex_num+age2 240 0.9990 0.1318 0.8280     1    0
-#> 8  sbp_cov2   sbp age+sex_num+age2 240 0.7999 0.1402 0.5228     1    0
-#> 9  hdl_cov2   hdl age+sex_num+age2 240 0.8039 0.1405 0.5259     1    0
+#> 1 bmi_unadj   bmi                  240 0.9990 0.1296 0.8376     1    0
+#> 2 sbp_unadj   sbp                  240 0.8054 0.1392 0.5302     1    0
+#> 3 hdl_unadj   hdl                  240 0.8010 0.1394 0.5256     1    0
+#> 4  bmi_cov1   bmi      age+sex_num 240 0.9990 0.1313 0.8303     1    0
+#> 5  sbp_cov1   sbp      age+sex_num 240 0.8015 0.1402 0.5244     1    0
+#> 6  hdl_cov1   hdl      age+sex_num 240 0.8026 0.1395 0.5269     1    0
+#> 7  bmi_cov2   bmi age+sex_num+age2 240 0.9990 0.1317 0.8251     1    0
+#> 8  sbp_cov2   sbp age+sex_num+age2 240 0.8004 0.1401 0.5233     1    0
+#> 9  hdl_cov2   hdl age+sex_num+age2 240 0.8052 0.1405 0.5271     1    0
 #>   var_covariates sigma2_a sigma2_e
-#> 1             NA  0.93477  0.00094
-#> 2             NA  0.80117  0.19348
-#> 3             NA  0.79550  0.19915
-#> 4         0.0207  0.92785  0.00093
-#> 5         0.0085  0.79187  0.19651
-#> 6         0.0067  0.79210  0.19624
-#> 7         0.0304  0.92432  0.00093
-#> 8         0.0118  0.78783  0.19710
-#> 9         0.0091  0.79525  0.19393
+#> 1             NA  0.90510  0.00091
+#> 2             NA  0.77409  0.18708
+#> 3             NA  0.76987  0.19130
+#> 4         0.0209  0.89834  0.00090
+#> 5         0.0087  0.76543  0.18952
+#> 6         0.0070  0.76629  0.18849
+#> 7         0.0307  0.89482  0.00090
+#> 8         0.0121  0.76155  0.18992
+#> 9         0.0094  0.76945  0.18617
 ```
 
 ``` r

@@ -107,7 +107,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Ritable</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -297,8 +297,8 @@ the same: larger off-diagonal values mean more shared ancestry.</p>
 <span><span class="co">#&gt;  $ ci_hi         : num 1</span></span>
 <span><span class="co">#&gt;  $ pval          : num 0.5</span></span>
 <span><span class="co">#&gt;  $ var_covariates: num NA</span></span>
-<span><span class="co">#&gt;  $ sigma2_a      : num 0.00071</span></span>
-<span><span class="co">#&gt;  $ sigma2_e      : num 0.712</span></span></code></pre></div>
+<span><span class="co">#&gt;  $ sigma2_a      : num 0.00039</span></span>
+<span><span class="co">#&gt;  $ sigma2_e      : num 0.386</span></span></code></pre></div>
 <p>The returned list contains:</p>
 <table class="table">
 <colgroup>
@@ -371,15 +371,15 @@ tidy data frame.</p>
 <span></span>
 <span><span class="va">res</span></span>
 <span><span class="co">#&gt;       label trait  covariates n    h2      se ci_lo ci_hi pval var_covariates</span></span>
-<span><span class="co">#&gt; 1 bmi_unadj   bmi             4 0.001 44.7214     0     1  0.5             NA</span></span>
-<span><span class="co">#&gt; 2 hdl_unadj   hdl             4 0.001 44.7214     0     1  0.5             NA</span></span>
-<span><span class="co">#&gt; 3  bmi_cov1   bmi age+sex_num 4 0.001      NA    NA    NA  0.5         0.7592</span></span>
-<span><span class="co">#&gt; 4  hdl_cov1   hdl age+sex_num 4 0.001      NA    NA    NA  0.5         0.7592</span></span>
+<span><span class="co">#&gt; 1 bmi_unadj   bmi             4 0.001 44.7184     0     1  0.5             NA</span></span>
+<span><span class="co">#&gt; 2 hdl_unadj   hdl             4 0.001 44.7184     0     1  0.5             NA</span></span>
+<span><span class="co">#&gt; 3  bmi_cov1   bmi age+sex_num 4 0.001      NA    NA    NA  0.5         0.7778</span></span>
+<span><span class="co">#&gt; 4  hdl_cov1   hdl age+sex_num 4 0.001      NA    NA    NA  0.5         0.7778</span></span>
 <span><span class="co">#&gt;   sigma2_a sigma2_e</span></span>
-<span><span class="co">#&gt; 1  0.00071  0.71206</span></span>
-<span><span class="co">#&gt; 2  0.00071  0.71206</span></span>
-<span><span class="co">#&gt; 3  0.00017  0.17143</span></span>
-<span><span class="co">#&gt; 4  0.00017  0.17143</span></span></code></pre></div>
+<span><span class="co">#&gt; 1  0.00039  0.38606</span></span>
+<span><span class="co">#&gt; 2  0.00039  0.38606</span></span>
+<span><span class="co">#&gt; 3  0.00009  0.08576</span></span>
+<span><span class="co">#&gt; 4  0.00009  0.08576</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">
@@ -480,25 +480,25 @@ phenotype CSV files.</p>
 <span></span>
 <span><span class="va">res</span></span>
 <span><span class="co">#&gt;       label trait       covariates   n     h2     se  ci_lo ci_hi pval</span></span>
-<span><span class="co">#&gt; 1 bmi_unadj   bmi                  240 0.9990 0.1297 0.8400     1    0</span></span>
-<span><span class="co">#&gt; 2 sbp_unadj   sbp                  240 0.8055 0.1392 0.5303     1    0</span></span>
-<span><span class="co">#&gt; 3 hdl_unadj   hdl                  240 0.7998 0.1394 0.5243     1    0</span></span>
-<span><span class="co">#&gt; 4  bmi_cov1   bmi      age+sex_num 240 0.9990 0.1313 0.8331     1    0</span></span>
-<span><span class="co">#&gt; 5  sbp_cov1   sbp      age+sex_num 240 0.8012 0.1402 0.5240     1    0</span></span>
-<span><span class="co">#&gt; 6  hdl_cov1   hdl      age+sex_num 240 0.8014 0.1395 0.5258     1    0</span></span>
-<span><span class="co">#&gt; 7  bmi_cov2   bmi age+sex_num+age2 240 0.9990 0.1318 0.8280     1    0</span></span>
-<span><span class="co">#&gt; 8  sbp_cov2   sbp age+sex_num+age2 240 0.7999 0.1402 0.5228     1    0</span></span>
-<span><span class="co">#&gt; 9  hdl_cov2   hdl age+sex_num+age2 240 0.8039 0.1405 0.5259     1    0</span></span>
+<span><span class="co">#&gt; 1 bmi_unadj   bmi                  240 0.9990 0.1296 0.8376     1    0</span></span>
+<span><span class="co">#&gt; 2 sbp_unadj   sbp                  240 0.8054 0.1392 0.5302     1    0</span></span>
+<span><span class="co">#&gt; 3 hdl_unadj   hdl                  240 0.8010 0.1394 0.5256     1    0</span></span>
+<span><span class="co">#&gt; 4  bmi_cov1   bmi      age+sex_num 240 0.9990 0.1313 0.8303     1    0</span></span>
+<span><span class="co">#&gt; 5  sbp_cov1   sbp      age+sex_num 240 0.8015 0.1402 0.5244     1    0</span></span>
+<span><span class="co">#&gt; 6  hdl_cov1   hdl      age+sex_num 240 0.8026 0.1395 0.5269     1    0</span></span>
+<span><span class="co">#&gt; 7  bmi_cov2   bmi age+sex_num+age2 240 0.9990 0.1317 0.8251     1    0</span></span>
+<span><span class="co">#&gt; 8  sbp_cov2   sbp age+sex_num+age2 240 0.8004 0.1401 0.5233     1    0</span></span>
+<span><span class="co">#&gt; 9  hdl_cov2   hdl age+sex_num+age2 240 0.8052 0.1405 0.5271     1    0</span></span>
 <span><span class="co">#&gt;   var_covariates sigma2_a sigma2_e</span></span>
-<span><span class="co">#&gt; 1             NA  0.93477  0.00094</span></span>
-<span><span class="co">#&gt; 2             NA  0.80117  0.19348</span></span>
-<span><span class="co">#&gt; 3             NA  0.79550  0.19915</span></span>
-<span><span class="co">#&gt; 4         0.0207  0.92785  0.00093</span></span>
-<span><span class="co">#&gt; 5         0.0085  0.79187  0.19651</span></span>
-<span><span class="co">#&gt; 6         0.0067  0.79210  0.19624</span></span>
-<span><span class="co">#&gt; 7         0.0304  0.92432  0.00093</span></span>
-<span><span class="co">#&gt; 8         0.0118  0.78783  0.19710</span></span>
-<span><span class="co">#&gt; 9         0.0091  0.79525  0.19393</span></span></code></pre></div>
+<span><span class="co">#&gt; 1             NA  0.90510  0.00091</span></span>
+<span><span class="co">#&gt; 2             NA  0.77409  0.18708</span></span>
+<span><span class="co">#&gt; 3             NA  0.76987  0.19130</span></span>
+<span><span class="co">#&gt; 4         0.0209  0.89834  0.00090</span></span>
+<span><span class="co">#&gt; 5         0.0087  0.76543  0.18952</span></span>
+<span><span class="co">#&gt; 6         0.0070  0.76629  0.18849</span></span>
+<span><span class="co">#&gt; 7         0.0307  0.89482  0.00090</span></span>
+<span><span class="co">#&gt; 8         0.0121  0.76155  0.18992</span></span>
+<span><span class="co">#&gt; 9         0.0094  0.76945  0.18617</span></span></code></pre></div>
 <div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw">if</span> <span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/ns-load.html" class="external-link">requireNamespace</a></span><span class="op">(</span><span class="st">"ggplot2"</span>, quietly <span class="op">=</span> <span class="cn">TRUE</span><span class="op">)</span><span class="op">)</span> <span class="op">{</span></span>
 <span>  <span class="fu"><a href="../reference/plot_forest.html">plot_forest</a></span><span class="op">(</span><span class="va">res</span>, model_filter <span class="op">=</span> <span class="st">"cov2"</span>,</span>

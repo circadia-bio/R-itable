@@ -1,14 +1,19 @@
 # Ritable: Pedigree-Based Heritability Estimation for Family Cohort Studies
 
-Provides profile-likelihood variance-components estimation of
-narrow-sense heritability (h2) for quantitative traits in family cohort
-studies. Additive genetic relationship matrices are built from pedigrees
-via 'kinship2'. Phenotypes are inverse-normal transformed internally.
+Provides profile-likelihood and general maximum-likelihood
+variance-components estimation of narrow-sense heritability (h2),
+household/common-environment effects (c2), and bivariate genetic and
+environmental correlations for quantitative traits in family cohort and
+twin studies. Additive genetic relationship matrices are built from
+pedigrees via 'kinship2', including monozygotic-twin relatedness
+overrides. Phenotypes are inverse-normal transformed internally.
 Likelihood-ratio tests use a one-sided chi-squared boundary correction
 equivalent to SOLAR Eclipse. Ninety-five percent confidence intervals
 are derived from the profile likelihood rather than Wald approximations.
-Batch estimation over many traits returns tidy data frames ready for
-downstream visualisation (forest plots, heatmaps).
+Batch estimation over many traits or trait pairs returns tidy data
+frames ready for downstream visualisation (forest plots, heatmaps) and
+includes Benjamini-Hochberg FDR correction for bivariate correlation
+batches.
 
 ## See also
 

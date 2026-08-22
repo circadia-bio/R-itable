@@ -15,12 +15,12 @@ Source:
 
 França L, Leocadio-Miguel M (2026). *Ritable: Pedigree-Based
 Heritability Estimation for Family Cohort Studies*. R package version
-0.1.0, <https://r-itable.circadia-lab.uk>.
+0.2.0, <https://r-itable.circadia-lab.uk>.
 
     @Manual{,
       title = {Ritable: Pedigree-Based Heritability Estimation for Family Cohort Studies},
       author = {Lucas França and Mario Leocadio-Miguel},
       year = {2026},
-      note = {R package version 0.1.0},
+      note = {R package version 0.2.0},
       url = {https://r-itable.circadia-lab.uk},
     }

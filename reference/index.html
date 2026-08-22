@@ -88,7 +88,7 @@
 
     <a class="navbar-brand me-2" href="../index.html">Ritable</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -125,7 +125,7 @@
     <div class="section level2">
       <h2 id="genetic-relationship-matrix">Genetic relationship matrix<a class="anchor" aria-label="anchor" href="#genetic-relationship-matrix"></a></h2>
 
-      <div class="section-desc"><p>Build the additive GRM from a pedigree data frame.</p></div>
+      <div class="section-desc"><p>Build the additive GRM (and household matrix) from a pedigree data frame.</p></div>
 
       <dl></dl></div><div class="section level2">
 
@@ -138,6 +138,13 @@
 
         </dt>
         <dd>Build an additive genetic relationship matrix from a pedigree</dd>
+
+        <dt>
+
+          <code><a href="build_household.html">build_household()</a></code>
+
+        </dt>
+        <dd>Build a household (shared-environment) indicator matrix</dd>
       </dl></div><div class="section level2">
       <h2 id="heritability-estimation">Heritability estimation<a class="anchor" aria-label="anchor" href="#heritability-estimation"></a></h2>
 
@@ -161,6 +168,45 @@
 
         </dt>
         <dd>Batch heritability estimation over multiple traits</dd>
+      </dl></div><div class="section level2">
+      <h2 id="household-effects-twin-ace-models">Household effects &amp; twin ACE models<a class="anchor" aria-label="anchor" href="#household-effects-twin-ace-models"></a></h2>
+
+      <div class="section-desc"><p>A vs C identifiability for family and twin cohorts.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="herit_ace.html">herit_ace()</a></code>
+
+        </dt>
+        <dd>A vs C identifiability check (ACE model comparison)</dd>
+      </dl></div><div class="section level2">
+      <h2 id="bivariate-genetic-environmental-correlation">Bivariate genetic/environmental correlation<a class="anchor" aria-label="anchor" href="#bivariate-genetic-environmental-correlation"></a></h2>
+
+      <div class="section-desc"><p>Genetic and environmental correlation between trait pairs.</p></div>
+
+      <dl></dl></div><div class="section level2">
+
+
+
+
+      <dl><dt>
+
+          <code><a href="herit_bivar.html">herit_bivar()</a></code>
+
+        </dt>
+        <dd>Bivariate genetic and environmental correlation between two traits</dd>
+
+        <dt>
+
+          <code><a href="herit_bivar_batch.html">herit_bivar_batch()</a></code>
+
+        </dt>
+        <dd>Batch bivariate genetic/environmental correlations with FDR correction</dd>
       </dl></div><div class="section level2">
       <h2 id="utilities">Utilities<a class="anchor" aria-label="anchor" href="#utilities"></a></h2>
 

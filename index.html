@@ -112,7 +112,7 @@
 
     <a class="navbar-brand me-2" href="index.html">Ritable</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.1.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -175,6 +175,9 @@
 </h2>
 <ul>
 <li>🔬 <strong>Profile-likelihood VC estimator</strong> — eigendecomposition of the GRM, 1-D optimisation, exact LRT with one-sided χ²(1) boundary correction (matching SOLAR).</li>
+<li>👯 <strong>Twin cohorts</strong> — <code>build_grm(mz_col = ...)</code> gives monozygotic pairs (or larger groups) the correct kinship of 1.0, instead of the ordinary full-sibling 0.5.</li>
+<li>🏠 <strong>Household/common-environment effects</strong> — <code><a href="reference/herit_ace.html">herit_ace()</a></code> fits nested sporadic/AE/CE/ACE models and tests whether A and C are jointly identifiable in your sample.</li>
+<li>🔗 <strong>Bivariate genetic/environmental correlations</strong> — <code><a href="reference/herit_bivar.html">herit_bivar()</a></code> / <code><a href="reference/herit_bivar_batch.html">herit_bivar_batch()</a></code> estimate rhoG, rhoE, and derived rhoP between trait pairs, with LRTs and Benjamini-Hochberg FDR correction across a batch.</li>
 <li>📐 <strong>Profile-likelihood CIs</strong> — not Wald ±1.96 SE; proper asymmetric intervals via <code><a href="https://rdrr.io/r/stats/uniroot.html" class="external-link">uniroot()</a></code>.</li>
 <li>🔄 <strong>INT transformation</strong> — inverse-normal transform applied internally; also exported as <code><a href="reference/int_transform.html">int_transform()</a></code> for use in other pipelines.</li>
 <li>📦 <strong>Batch mode</strong> — <code><a href="reference/herit_batch.html">herit_batch()</a></code> iterates over traits × covariate models and returns a tidy data frame, ready for tables and figures.</li>
@@ -189,17 +192,24 @@
 <pre><code>R-itable/
 ├── R/
 │   ├── Ritable-package.R      # package-level docs and colour palette
-│   ├── build_grm.R            # build additive GRM from pedigree
+│   ├── build_grm.R            # build additive GRM from pedigree (incl. MZ twins)
+│   ├── build_household.R      # build household/shared-environment matrix
 │   ├── int_transform.R        # rank-based inverse-normal transform
 │   ├── herit_vc.R             # single-trait VC estimator
 │   ├── herit_batch.R          # batch wrapper
+│   ├── herit_ace.R            # A vs C identifiability (sporadic/AE/CE/ACE)
+│   ├── herit_bivar.R          # bivariate genetic/environmental correlation
+│   ├── vc_utils.R             # internal general-ML helpers (ACE, bivariate)
 │   └── plot_forest.R          # ggplot2 forest plot
 ├── tests/testthat/
-│   ├── helper-fixtures.R      # shared synthetic pedigree/data
+│   ├── helper-fixtures.R      # shared synthetic pedigree/twin/data fixtures
 │   ├── test-build_grm.R
+│   ├── test-build_household.R
 │   ├── test-int_transform.R
 │   ├── test-herit_vc.R
-│   └── test-herit_batch.R
+│   ├── test-herit_batch.R
+│   ├── test-herit_ace.R
+│   └── test-herit_bivar.R
 ├── vignettes/
 │   └── getting-started.Rmd
 ├── data-raw/
@@ -256,6 +266,27 @@
 <span></span>
 <span><span class="co"># 4. Forest plot</span></span>
 <span><span class="fu"><a href="reference/plot_forest.html">plot_forest</a></span><span class="op">(</span><span class="va">res</span>, model_filter <span class="op">=</span> <span class="st">"cov2"</span><span class="op">)</span></span></code></pre></div>
+</div>
+<div class="section level3">
+<h3 id="twin-cohorts-mz-relatedness-household-effects-bivariate-correlations">Twin cohorts: MZ relatedness, household effects, bivariate correlations<a class="anchor" aria-label="anchor" href="#twin-cohorts-mz-relatedness-household-effects-bivariate-correlations"></a>
+</h3>
+<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># GRM with MZ-twin relatedness override (mztwin_col groups MZ pairs/triplets)</span></span>
+<span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_grm.html">build_grm</a></span><span class="op">(</span><span class="va">twin_pedigree</span>, study_ids <span class="op">=</span> <span class="va">twin_data</span><span class="op">$</span><span class="va">IID</span>, mz_col <span class="op">=</span> <span class="st">"mztwin"</span><span class="op">)</span></span>
+<span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_household.html">build_household</a></span><span class="op">(</span><span class="va">twin_pedigree</span><span class="op">$</span><span class="va">hhid</span>, <span class="va">twin_pedigree</span><span class="op">$</span><span class="va">id</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># A vs C identifiability: sporadic / AE / CE / full ACE</span></span>
+<span><span class="fu"><a href="reference/herit_ace.html">herit_ace</a></span><span class="op">(</span><span class="st">"anxiety_score"</span>, grm <span class="op">=</span> <span class="va">A</span>, household <span class="op">=</span> <span class="va">C</span>, data <span class="op">=</span> <span class="va">twin_data</span>, id_col <span class="op">=</span> <span class="st">"IID"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Bivariate genetic/environmental correlation between two traits</span></span>
+<span><span class="fu"><a href="reference/herit_bivar.html">herit_bivar</a></span><span class="op">(</span><span class="st">"anxiety_score"</span>, <span class="st">"depression_score"</span>, grm <span class="op">=</span> <span class="va">A</span>, data <span class="op">=</span> <span class="va">twin_data</span>, id_col <span class="op">=</span> <span class="st">"IID"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># Many trait pairs at once, with BH-FDR correction per correlation type</span></span>
+<span><span class="va">pairs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
+<span>  trait1 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"anxiety_score"</span>, <span class="st">"depression_score"</span><span class="op">)</span>,</span>
+<span>  trait2 <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"sleep_quality"</span>, <span class="st">"sleep_quality"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span>
+<span><span class="fu"><a href="reference/herit_bivar_batch.html">herit_bivar_batch</a></span><span class="op">(</span><span class="va">pairs</span>, grm <span class="op">=</span> <span class="va">A</span>, data <span class="op">=</span> <span class="va">twin_data</span>, id_col <span class="op">=</span> <span class="st">"IID"</span><span class="op">)</span></span></code></pre></div>
 <p>For a full walkthrough see <code><a href="articles/getting-started.html">vignette("getting-started", package = "Ritable")</a></code>.</p>
 <hr>
 </div>
