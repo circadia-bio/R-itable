@@ -23,6 +23,12 @@ The three main steps are:
     then visualise with
     [`plot_forest()`](https://r-itable.circadia-lab.uk/reference/plot_forest.md).
 
+For twin cohorts specifically – monozygotic relatedness,
+household/shared- environment effects, and bivariate
+genetic/environmental correlations between two traits – see
+[`vignette("twin-cohorts")`](https://r-itable.circadia-lab.uk/articles/twin-cohorts.md)
+instead/in addition.
+
 ------------------------------------------------------------------------
 
 ## 1. Build the GRM
@@ -330,5 +336,5 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 If you use **R-itable** in a publication, please cite:
 
     Franca, L. & Leocadio-Miguel, M. (2026). R-itable: Pedigree-Based Heritability
-    Estimation for Family Cohort Studies. R package version 0.1.0.
+    Estimation for Family Cohort Studies. R package version 0.2.0.
     https://github.com/circadia-bio/R-itable

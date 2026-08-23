@@ -114,15 +114,24 @@ matching SOLAR Eclipse's default `UnbalancedTraits` behaviour
 (individuals are only excluded if *both* traits, or the ID, are
 missing). This is both more statistically appropriate than dropping them
 (more information used under the usual MAR assumption) and matches SOLAR
-exactly on affected pairs once combined with the SOLAR-exact `inormal`
-tie handling in
+exactly once combined with the SOLAR-exact `inormal` tie handling in
 [`int_transform()`](https://r-itable.circadia-lab.uk/reference/int_transform.md)
-(see NEWS.md for validation). When neither trait has missing data (the
+– see NEWS.md for validation. When neither trait has missing data (the
 common case), this reduces to the same fast eigenbasis computation as
 before – the unbalanced path is only used when needed, since it cannot
-exploit the eigenbasis shortcut (the missingness pattern is individual-
-specific, so the joint covariance no longer shares a common eigenbasis
-with `A` across all n individuals).
+exploit the eigenbasis shortcut (the missingness pattern is
+individual-specific, so the joint covariance no longer shares a common
+eigenbasis with `A` across all n individuals).
+
+**Numerical robustness:** both traits are standardised to unit variance
+before fitting. h2 and the correlations are scale-invariant, so this
+changes nothing about the true ML answer, but avoids a real failure mode
+for raw (non-INT-transformed) traits with an extreme variance – e.g. a
+data-entry problem producing values in the billions – where the
+unstandardised covariance matrix loses all floating-point precision.
+rhoG/rhoE are also bounded to `[-0.9, 0.9]`, matching SOLAR's actual
+default parameter bounds (confirmed from source, not just documentation
+– see NEWS.md) rather than the mathematical `[-1, 1]`.
 
 As with
 [`herit_ace()`](https://r-itable.circadia-lab.uk/reference/herit_ace.md),
@@ -133,14 +142,15 @@ Validated on the Gomes et al. twin dataset (31 trait pairs), combining
 correct per-trait inverse-normal transform selection, SOLAR-exact
 `inormal` tie handling (see
 [`int_transform()`](https://r-itable.circadia-lab.uk/reference/int_transform.md)),
-data-driven optimiser starting values, and unbalanced-trait handling: 29
+unbalanced-trait handling, and the numerical robustness fixes above: 28
 of 31 pairs match SOLAR Eclipse to 4 decimal places exactly on both rhoG
-and rhoE, and all 31 pairs agree on nominal significance for both. The
-bivariate model's omega was also independently confirmed algebraically
-identical to SOLAR's own documented formula for multivariate polygenic
-models (SOLAR Manual Chapter 9). The 2 remaining pairs both involve a
-single phenotype with an anomalous raw variance (a data-quality issue
-independent of this package, not a modelling gap) – see NEWS.md.
+and rhoE, and all 31 pairs agree on nominal significance for both. The 2
+remaining pairs both involve a single phenotype (`CRONOTIPO_MCTQ_m` in
+the validation dataset) that produces wildly different results from
+SOLAR's reported values even under a fully numerically-robust fit –
+strong evidence that the underlying data values differ between this
+package's copy and whatever SOLAR was actually run on, not a modelling
+or numerical gap in this package. See NEWS.md.
 
 ## See also
 

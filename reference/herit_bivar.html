@@ -115,6 +115,7 @@ solar_full_analysis.tcl, Part 5)."><meta property="og:image" content="https://r-
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-articles" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">Articles</button>
   <ul class="dropdown-menu" aria-labelledby="dropdown-articles"><li><a class="dropdown-item" href="../articles/getting-started.html">Getting started with R-itable</a></li>
+    <li><a class="dropdown-item" href="../articles/twin-cohorts.html">Twin cohorts: MZ relatedness, household effects, and bivariate correlations</a></li>
   </ul></li>
 <li class="nav-item dropdown">
   <button class="nav-link dropdown-toggle" type="button" id="dropdown-news" data-bs-toggle="dropdown" aria-expanded="false" aria-haspopup="true">News</button>
@@ -246,27 +247,37 @@ contributing their observed trait's marginal likelihood, matching SOLAR
 Eclipse's default <code>UnbalancedTraits</code> behaviour (individuals are only
 excluded if <em>both</em> traits, or the ID, are missing). This is both more
 statistically appropriate than dropping them (more information used under
-the usual MAR assumption) and matches SOLAR exactly on affected pairs once
-combined with the SOLAR-exact <code>inormal</code> tie handling in <code><a href="int_transform.html">int_transform()</a></code>
-(see NEWS.md for validation). When neither trait has missing data (the
-common case), this reduces to the same fast eigenbasis computation as
-before – the unbalanced path is only used when needed, since it cannot
-exploit the eigenbasis shortcut (the missingness pattern is individual-
-specific, so the joint covariance no longer shares a common eigenbasis
-with <code>A</code> across all n individuals).</p>
+the usual MAR assumption) and matches SOLAR exactly once combined with
+the SOLAR-exact <code>inormal</code> tie handling in <code><a href="int_transform.html">int_transform()</a></code> – see
+NEWS.md for validation. When neither trait has missing data (the common
+case), this reduces to the same fast eigenbasis computation as before –
+the unbalanced path is only used when needed, since it cannot exploit the
+eigenbasis shortcut (the missingness pattern is individual-specific, so
+the joint covariance no longer shares a common eigenbasis with <code>A</code> across
+all n individuals).</p>
+<p><strong>Numerical robustness:</strong> both traits are standardised to unit variance
+before fitting. h2 and the correlations are scale-invariant, so this
+changes nothing about the true ML answer, but avoids a real failure mode
+for raw (non-INT-transformed) traits with an extreme variance – e.g. a
+data-entry problem producing values in the billions – where the
+unstandardised covariance matrix loses all floating-point precision.
+rhoG/rhoE are also bounded to <code>[-0.9, 0.9]</code>, matching SOLAR's actual
+default parameter bounds (confirmed from source, not just documentation
+– see NEWS.md) rather than the mathematical <code>[-1, 1]</code>.</p>
 <p>As with <code><a href="herit_ace.html">herit_ace()</a></code>, the unbalanced path uses direct numerical ML over
 the full covariance matrix rather than an eigendecomposition shortcut.</p>
 <p>Validated on the Gomes et al. twin dataset (31 trait pairs), combining
 correct per-trait inverse-normal transform selection, SOLAR-exact
-<code>inormal</code> tie handling (see <code><a href="int_transform.html">int_transform()</a></code>), data-driven optimiser
-starting values, and unbalanced-trait handling: 29 of 31 pairs match
+<code>inormal</code> tie handling (see <code><a href="int_transform.html">int_transform()</a></code>), unbalanced-trait
+handling, and the numerical robustness fixes above: 28 of 31 pairs match
 SOLAR Eclipse to 4 decimal places exactly on both rhoG and rhoE, and all
-31 pairs agree on nominal significance for both. The bivariate model's
-omega was also independently confirmed algebraically identical to
-SOLAR's own documented formula for multivariate polygenic models (SOLAR
-Manual Chapter 9). The 2 remaining pairs both involve a single phenotype
-with an anomalous raw variance (a data-quality issue independent of this
-package, not a modelling gap) – see NEWS.md.</p>
+31 pairs agree on nominal significance for both. The 2 remaining pairs
+both involve a single phenotype (<code>CRONOTIPO_MCTQ_m</code> in the validation
+dataset) that produces wildly different results from SOLAR's reported
+values even under a fully numerically-robust fit – strong evidence that
+the underlying data values differ between this package's copy and
+whatever SOLAR was actually run on, not a modelling or numerical gap in
+this package. See NEWS.md.</p>
     </div>
     <div class="section level2">
     <h2 id="see-also">See also<a class="anchor" aria-label="anchor" href="#see-also"></a></h2>

@@ -1,0 +1,348 @@
+# Twin cohorts: MZ relatedness, household effects, and bivariate correlations
+
+``` r
+
+library(Ritable)
+```
+
+## Overview
+
+The [Getting
+started](https://r-itable.circadia-lab.uk/articles/getting-started.md)
+vignette covers
+[`herit_vc()`](https://r-itable.circadia-lab.uk/reference/herit_vc.md)
+and
+[`herit_batch()`](https://r-itable.circadia-lab.uk/reference/herit_batch.md):
+single-component (additive genetic, A-only) heritability for general
+family pedigrees. Twin studies add three things that vignette doesn’t
+cover:
+
+1.  **Monozygotic (MZ) twins are genetically identical** (relatedness
+    1.0, not the ordinary full-sibling 0.5) –
+    [`build_grm()`](https://r-itable.circadia-lab.uk/reference/build_grm.md)’s
+    `mz_col` argument.
+2.  **Twins reared together share more than genes** – a common/shared
+    environment (“household”, or **C** in the classic **ACE** model)
+    that can be confounded with additive genetic (**A**) effects unless
+    you explicitly test for it –
+    [`build_household()`](https://r-itable.circadia-lab.uk/reference/build_household.md)
+    and
+    [`herit_ace()`](https://r-itable.circadia-lab.uk/reference/herit_ace.md).
+3.  **Twin designs are the classical setting for asking whether two
+    traits share genetic or environmental causes** – bivariate
+    genetic/environmental correlation, via
+    [`herit_bivar()`](https://r-itable.circadia-lab.uk/reference/herit_bivar.md)
+    and
+    [`herit_bivar_batch()`](https://r-itable.circadia-lab.uk/reference/herit_bivar_batch.md).
+
+This vignette builds a small synthetic twin cohort and walks through all
+three.
+
+------------------------------------------------------------------------
+
+## 1. Simulate a twin cohort
+
+A twin pedigree looks like any other pedigree, but with two extra
+columns
+[`build_grm()`](https://r-itable.circadia-lab.uk/reference/build_grm.md)
+and
+[`build_household()`](https://r-itable.circadia-lab.uk/reference/build_household.md)
+care about: an **MZ-twin label** (shared only by monozygotic pairs) and
+a **household ID** (shared by anyone reared together, MZ or DZ).
+
+We’ll simulate 30 MZ pairs and 30 DZ pairs (120 individuals total), each
+pair with its own synthetic founder “parents”
+([`build_grm()`](https://r-itable.circadia-lab.uk/reference/build_grm.md)
+needs founders present as their own rows, even when – as here – they
+aren’t real study participants). Two correlated phenotypes are simulated
+with known genetic and environmental correlations, so we have a known
+answer to check
+[`herit_bivar()`](https://r-itable.circadia-lab.uk/reference/herit_bivar.md)
+against later.
+
+``` r
+
+# Tiny base-R replacement for MASS::mvrnorm for a 2x2 covariance -- R-itable
+# has no dependency on MASS, so the vignette doesn't introduce one either.
+rbinorm <- function(n, rho) {
+  z <- matrix(rnorm(2 * n), n, 2)
+  L <- chol(matrix(c(1, rho, rho, 1), 2, 2))
+  z %*% L
+}
+
+set.seed(2026)
+n_mz <- 30
+n_dz <- 30
+n_pairs <- n_mz + n_dz
+
+rhoG_true <- 0.85  # true genetic correlation (before dilution from DZ noise)
+rhoE_true <- 0.35  # true environmental correlation
+
+ped_rows   <- vector("list", n_pairs)
+pheno_rows <- vector("list", n_pairs)
+
+# Family-level genetic latents for the two traits, correlated at rhoG_true
+fam_g <- rbinorm(n_pairs, rhoG_true)
+
+for (i in seq_len(n_pairs)) {
+  is_mz  <- i <= n_mz
+  fa     <- paste0("F", i)
+  mo     <- paste0("M", i)
+  id1    <- (i - 1L) * 2L + 1L
+  id2    <- id1 + 1L
+  mztwin <- if (is_mz) paste0("MZ", i) else NA_character_
+  hh     <- paste0("HH", i)
+  pair_sex <- if (is_mz) rep(sample(1:2, 1), 2) else sample(1:2, 2, replace = TRUE)
+
+  ped_rows[[i]] <- data.frame(
+    id = c(id1, id2), pat = c(fa, fa), mom = c(mo, mo),
+    mztwin = c(mztwin, mztwin), zygosity = if (is_mz) "MZ" else "DZ",
+    sex = pair_sex, hhid = c(hh, hh), stringsAsFactors = FALSE
+  )
+
+  # Additive genetic effect: shared fully within MZ pairs; shared "family"
+  # component plus individual-specific noise within DZ pairs (average
+  # relatedness 0.5).
+  g1_fam <- fam_g[i, 1]; g2_fam <- fam_g[i, 2]
+  if (is_mz) {
+    g1 <- c(g1_fam, g1_fam)
+    g2 <- c(g2_fam, g2_fam)
+  } else {
+    g1 <- g1_fam + rnorm(2)
+    g2 <- g2_fam + rnorm(2)
+  }
+
+  # Environmental effect, correlated at rhoE_true, independent across twins
+  env <- rbinorm(2, rhoE_true)
+
+  y1 <- sqrt(0.5) * g1 + sqrt(0.5) * env[, 1]
+  y2 <- sqrt(0.4) * g2 + sqrt(0.6) * env[, 2]
+
+  pheno_rows[[i]] <- data.frame(id = c(id1, id2), sleep_quality = y1, anxiety = y2)
+}
+
+ped_df   <- do.call(rbind, ped_rows)
+pheno_df <- do.call(rbind, pheno_rows)
+
+# build_grm() needs founders present as their own rows (pat/mom = NA)
+fathers  <- unique(ped_df$pat)
+mothers  <- unique(ped_df$mom)
+founders <- data.frame(
+  id = c(fathers, mothers), pat = NA, mom = NA, mztwin = NA, zygosity = NA,
+  sex = c(rep(1, length(fathers)), rep(2, length(mothers))), hhid = NA,
+  stringsAsFactors = FALSE
+)
+full_ped <- rbind(founders, ped_df)
+
+head(ped_df)
+#>   id pat mom mztwin zygosity sex hhid
+#> 1  1  F1  M1    MZ1       MZ   1  HH1
+#> 2  2  F1  M1    MZ1       MZ   1  HH1
+#> 3  3  F2  M2    MZ2       MZ   2  HH2
+#> 4  4  F2  M2    MZ2       MZ   2  HH2
+#> 5  5  F3  M3    MZ3       MZ   1  HH3
+#> 6  6  F3  M3    MZ3       MZ   1  HH3
+```
+
+------------------------------------------------------------------------
+
+## 2. Build the GRM with MZ relatedness
+
+Without `mz_col`,
+[`build_grm()`](https://r-itable.circadia-lab.uk/reference/build_grm.md)
+treats every pair as ordinary full siblings (relatedness 0.5) – correct
+for DZ twins, wrong for MZ twins. Pass `mz_col` to fix that:
+
+``` r
+
+A <- build_grm(full_ped, study_ids = ped_df$id, mz_col = "mztwin")
+
+mz_ids <- ped_df$id[ped_df$zygosity == "MZ"][1:2]
+dz_ids <- ped_df$id[ped_df$zygosity == "DZ"][1:2]
+
+A[as.character(mz_ids), as.character(mz_ids)]
+#>   1 2
+#> 1 1 1
+#> 2 1 1
+A[as.character(dz_ids), as.character(dz_ids)]
+#>     61  62
+#> 61 1.0 0.5
+#> 62 0.5 1.0
+```
+
+The MZ pair’s off-diagonal is `1.0`; the DZ pair’s is the ordinary
+full-sibling `0.5`. `mz_col` also handles larger groups (e.g. MZ
+triplets) – every pairwise combination within a labelled group is
+marked, not just the first two.
+
+[`build_household()`](https://r-itable.circadia-lab.uk/reference/build_household.md)
+builds the companion matrix for the shared-environment (“household”)
+effect, from the `hhid` grouping column:
+
+``` r
+
+C <- build_household(ped_df$hhid, ped_df$id)
+C[as.character(mz_ids), as.character(mz_ids)]
+#>   1 2
+#> 1 1 1
+#> 2 1 1
+```
+
+------------------------------------------------------------------------
+
+## 3. A vs C identifiability: `herit_ace()`
+
+The classical twin design lets you decompose phenotypic variance into
+**A**dditive genetic, **C**ommon/shared environment, and unique
+**E**nvironment components – but only if the data actually support
+telling A and C apart.
+[`herit_ace()`](https://r-itable.circadia-lab.uk/reference/herit_ace.md)
+fits all four nested models (sporadic, AE-only, CE-only, full ACE) and
+gives you the two comparisons that matter:
+
+``` r
+
+dat <- pheno_df
+dat$IID <- dat$id
+
+res_ace <- herit_ace("sleep_quality", grm = A, household = C, data = dat, id_col = "IID")
+#> ✔ sleep_quality  n=120  h2(AE)=0.565  c2(CE)=0.22  c2(ACE)=0  p(ACE vs AE)=0.5
+str(res_ace)
+#> List of 14
+#>  $ trait              : chr "sleep_quality"
+#>  $ n                  : int 120
+#>  $ loglik_sporadic    : num -55.8
+#>  $ loglik_ae          : num -51.3
+#>  $ loglik_ce          : num -54.3
+#>  $ loglik_ace         : num -51.3
+#>  $ h2_ae              : num 0.565
+#>  $ c2_ce              : num 0.22
+#>  $ h2_ace             : num 0.565
+#>  $ c2_ace             : num 0
+#>  $ chisq_c_vs_sporadic: num 2.97
+#>  $ p_c_vs_sporadic    : num 0.0423
+#>  $ chisq_ace_vs_ae    : num 0
+#>  $ p_ace_vs_ae        : num 0.5
+```
+
+Reading the output:
+
+- **`p_c_vs_sporadic`** – is there a familial (shared) effect at all,
+  ignoring for a moment whether it’s genetic or environmental? A small
+  p-value here means yes.
+- **`p_ace_vs_ae`** – once additive genetic effects are in the model,
+  does adding a separate household term improve the fit? If not (large
+  p-value, and/or `c2_ace` at or near `0`), A and C are **not separately
+  identifiable** in this sample – the household signal detected above
+  gets fully absorbed into the genetic term when both are estimated
+  jointly. This is a common, real finding in twin studies with modest
+  samples, not a bug: report the simpler AE model in that case
+  (`h2_ae`), and note the limitation.
+
+------------------------------------------------------------------------
+
+## 4. Bivariate genetic/environmental correlation: `herit_bivar()`
+
+[`herit_bivar()`](https://r-itable.circadia-lab.uk/reference/herit_bivar.md)
+asks a different question: for **two** traits, how much of their
+phenotypic correlation is explained by shared genetic causes (rhoG) vs
+shared environmental causes (rhoE)?
+
+``` r
+
+res_biv <- herit_bivar("sleep_quality", "anxiety", grm = A, data = dat, id_col = "IID")
+#> ✔ sleep_quality x anxiety  n=120  rhoG=0.675 (p=0.0081)  rhoE=0.24 (p=0.201)
+str(res_biv)
+#> List of 12
+#>  $ trait1    : chr "sleep_quality"
+#>  $ trait2    : chr "anxiety"
+#>  $ n         : int 120
+#>  $ n_complete: int 120
+#>  $ h2_1      : num 0.465
+#>  $ h2_2      : num 0.523
+#>  $ rhoG      : num 0.675
+#>  $ rhoE      : num 0.24
+#>  $ rhoP      : num 0.454
+#>  $ p_rhoG    : num 0.0081
+#>  $ p_rhoE    : num 0.201
+#>  $ p_rhoP    : num 6.69e-06
+```
+
+We simulated `rhoG_true = 0.85` (diluted somewhat by the
+individual-specific genetic noise added for DZ pairs) and
+`rhoE_true = 0.35`;
+[`herit_bivar()`](https://r-itable.circadia-lab.uk/reference/herit_bivar.md)
+recovers a clearly significant genetic correlation and a smaller,
+non-significant environmental one – a realistic pattern (a trait pair
+that looks correlated mainly for genetic, not environmental, reasons).
+
+`rhoP` is the derived phenotypic correlation implied by rhoG, rhoE, and
+the two univariate heritabilities:
+
+``` r
+
+with(res_biv, rhoG * sqrt(h2_1 * h2_2) + rhoE * sqrt((1 - h2_1) * (1 - h2_2)))
+#> [1] 0.4542334
+res_biv$rhoP
+#> [1] 0.4542
+```
+
+------------------------------------------------------------------------
+
+## 5. Many trait pairs at once: `herit_bivar_batch()`
+
+Real analyses usually involve one trait of interest against a panel of
+others.
+[`herit_bivar_batch()`](https://r-itable.circadia-lab.uk/reference/herit_bivar_batch.md)
+iterates
+[`herit_bivar()`](https://r-itable.circadia-lab.uk/reference/herit_bivar.md)
+over a set of pairs and applies Benjamini-Hochberg FDR correction
+separately within each of the three p-value families (rhoG, rhoE, rhoP)
+– matching the convention used when cross-checking against SOLAR Eclipse
+output (see
+[`?herit_bivar_batch`](https://r-itable.circadia-lab.uk/reference/herit_bivar_batch.md)).
+
+``` r
+
+# Illustrative only -- 'anxiety' is the only second trait in this vignette's
+# toy dataset; in a real analysis this would be a panel of phenotypes.
+pairs <- data.frame(
+  trait1 = "sleep_quality",
+  trait2 = "anxiety"
+)
+
+herit_bivar_batch(pairs, grm = A, data = dat, id_col = "IID")
+```
+
+The returned data frame has one row per pair, with `q_rhoG`, `q_rhoE`,
+and `q_rhoP` alongside the raw p-values.
+
+------------------------------------------------------------------------
+
+## 6. A note on validation
+
+[`herit_ace()`](https://r-itable.circadia-lab.uk/reference/herit_ace.md)
+and
+[`herit_bivar()`](https://r-itable.circadia-lab.uk/reference/herit_bivar.md)
+use direct numerical maximum likelihood (Cholesky-based GLS) rather than
+[`herit_vc()`](https://r-itable.circadia-lab.uk/reference/herit_vc.md)’s
+eigendecomposition shortcut, since a household term or a second trait’s
+cross-covariance don’t in general share eigenvectors with the additive
+genetic matrix. Both have been validated against real SOLAR Eclipse
+output on a twin dataset with a documented ground-truth comparison – see
+`NEWS.md` for the numbers and methodology, and
+[`?herit_bivar`](https://r-itable.circadia-lab.uk/reference/herit_bivar.md)
+for what “validated” means precisely (not bit-identical to SOLAR, since
+that’s not achievable between independent numerical optimisers, but
+matching to several decimal places on the large majority of trait pairs
+checked).
+
+------------------------------------------------------------------------
+
+## 7. Citation
+
+If you use **R-itable** in a publication, please cite:
+
+    Franca, L. & Leocadio-Miguel, M. (2026). R-itable: Pedigree-Based Heritability
+    Estimation for Family Cohort Studies. R package version 0.2.0.
+    https://github.com/circadia-bio/R-itable
