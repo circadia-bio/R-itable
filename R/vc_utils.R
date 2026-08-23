@@ -147,9 +147,9 @@
   # start fails badly for traits with a large or small raw variance; a
   # data-driven start plus SOLAR's own conventional start (h2r=0.1) both
   # guard against that, and against local optima on weakly-identified pairs.
-  s1_0 <- log(max(var(y1), 1e-8))
-  s2_0 <- log(max(var(y2), 1e-8))
-  h2_0 <- qlogis(0.1)
+  s1_0 <- log(max(stats::var(y1), 1e-8))
+  s2_0 <- log(max(stats::var(y2), 1e-8))
+  h2_0 <- stats::qlogis(0.1)
   starts <- list(
     c(h2_0, h2_0, 0, 0, s1_0, s2_0),
     c(0, 0, 0, 0, s1_0, s2_0),
@@ -249,7 +249,7 @@
   y2z <- y2; y2z[!has_y2] <- 0
   s1_0 <- log(max(stats::var(y1[has_y1]), 1e-8))
   s2_0 <- log(max(stats::var(y2[has_y2]), 1e-8))
-  h2_0 <- qlogis(0.1)
+  h2_0 <- stats::qlogis(0.1)
   starts <- list(
     c(h2_0, h2_0, 0, 0, s1_0, s2_0),
     c(-0.5, -0.5, 0.2, 0.2, s1_0, s2_0),
