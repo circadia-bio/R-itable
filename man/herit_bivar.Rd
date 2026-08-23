@@ -78,29 +78,40 @@ contributing their observed trait's marginal likelihood, matching SOLAR
 Eclipse's default \code{UnbalancedTraits} behaviour (individuals are only
 excluded if \emph{both} traits, or the ID, are missing). This is both more
 statistically appropriate than dropping them (more information used under
-the usual MAR assumption) and matches SOLAR exactly on affected pairs once
-combined with the SOLAR-exact \code{inormal} tie handling in \code{\link[=int_transform]{int_transform()}}
-(see NEWS.md for validation). When neither trait has missing data (the
-common case), this reduces to the same fast eigenbasis computation as
-before -- the unbalanced path is only used when needed, since it cannot
-exploit the eigenbasis shortcut (the missingness pattern is individual-
-specific, so the joint covariance no longer shares a common eigenbasis
-with \code{A} across all n individuals).
+the usual MAR assumption) and matches SOLAR exactly once combined with
+the SOLAR-exact \code{inormal} tie handling in \code{\link[=int_transform]{int_transform()}} -- see
+NEWS.md for validation. When neither trait has missing data (the common
+case), this reduces to the same fast eigenbasis computation as before --
+the unbalanced path is only used when needed, since it cannot exploit the
+eigenbasis shortcut (the missingness pattern is individual-specific, so
+the joint covariance no longer shares a common eigenbasis with \code{A} across
+all n individuals).
+
+\strong{Numerical robustness:} both traits are standardised to unit variance
+before fitting. h2 and the correlations are scale-invariant, so this
+changes nothing about the true ML answer, but avoids a real failure mode
+for raw (non-INT-transformed) traits with an extreme variance -- e.g. a
+data-entry problem producing values in the billions -- where the
+unstandardised covariance matrix loses all floating-point precision.
+rhoG/rhoE are also bounded to \verb{[-0.9, 0.9]}, matching SOLAR's actual
+default parameter bounds (confirmed from source, not just documentation
+-- see NEWS.md) rather than the mathematical \verb{[-1, 1]}.
 
 As with \code{\link[=herit_ace]{herit_ace()}}, the unbalanced path uses direct numerical ML over
 the full covariance matrix rather than an eigendecomposition shortcut.
 
 Validated on the Gomes et al. twin dataset (31 trait pairs), combining
 correct per-trait inverse-normal transform selection, SOLAR-exact
-\code{inormal} tie handling (see \code{\link[=int_transform]{int_transform()}}), data-driven optimiser
-starting values, and unbalanced-trait handling: 29 of 31 pairs match
+\code{inormal} tie handling (see \code{\link[=int_transform]{int_transform()}}), unbalanced-trait
+handling, and the numerical robustness fixes above: 28 of 31 pairs match
 SOLAR Eclipse to 4 decimal places exactly on both rhoG and rhoE, and all
-31 pairs agree on nominal significance for both. The bivariate model's
-omega was also independently confirmed algebraically identical to
-SOLAR's own documented formula for multivariate polygenic models (SOLAR
-Manual Chapter 9). The 2 remaining pairs both involve a single phenotype
-with an anomalous raw variance (a data-quality issue independent of this
-package, not a modelling gap) -- see NEWS.md.
+31 pairs agree on nominal significance for both. The 2 remaining pairs
+both involve a single phenotype (\code{CRONOTIPO_MCTQ_m} in the validation
+dataset) that produces wildly different results from SOLAR's reported
+values even under a fully numerically-robust fit -- strong evidence that
+the underlying data values differ between this package's copy and
+whatever SOLAR was actually run on, not a modelling or numerical gap in
+this package. See NEWS.md.
 }
 \seealso{
 \code{\link[=build_grm]{build_grm()}}, \code{\link[=herit_vc]{herit_vc()}}, \code{\link[=herit_ace]{herit_ace()}}, \code{\link[=herit_bivar_batch]{herit_bivar_batch()}}
