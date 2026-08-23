@@ -73,6 +73,24 @@
 # Cholesky to n independent, cheap 2x2 blocks -- the same trick herit_vc()
 # uses for the univariate case, extended to two traits. This is what makes
 # herit_bivar_batch() over ~30 pairs tractable.
+#
+# sigma2_p1/sigma2_p2 ARE free ML-searched parameters here (unlike an
+# intermediate version of this file, which fixed them to the sample
+# variance to mirror SOLAR's "sd initialized in c++" architecture). That
+# turned out to be a regression: SOLAR's sd/mean appear to be given a good
+# starting value from the data but still refined by the outer optimiser,
+# not permanently fixed -- free search matches SOLAR's actual numeric
+# output more closely on well-conditioned traits. Numerical robustness for
+# extreme-raw-scale traits (e.g. a corrupted column with variance ~1e18) is
+# instead handled by standardising both traits to unit variance BEFORE
+# calling into this code (see herit_bivar()) -- h2/rho are scale-invariant,
+# so this changes nothing about the true ML answer, but keeps every
+# covariance-matrix entry in a numerically well-conditioned O(1) range
+# regardless of the traits' native units.
+#
+# rhoG/rhoE are bounded to [-0.9, 0.9], matching SOLAR's actual default
+# parameter bounds (confirmed from source, lib/solar.tcl proc polymod:
+# `set rholow -0.9; set rhoup 0.9`) rather than the mathematical [-1, 1].
 
 # Precompute the pieces of the bivariate problem that don't depend on the
 # variance-component parameters: A's eigendecomposition and the traits
@@ -85,10 +103,11 @@
       x2r = as.numeric(Vt %*% rep(1, length(y2))))
 }
 
-# par = (logit h2_1, logit h2_2, atanh rhoG, atanh rhoE, log sigma2_p1, log sigma2_p2)
+# par = (logit h2_1, logit h2_2, atanh-scaled rhoG in [-0.9,0.9],
+#        atanh-scaled rhoE in [-0.9,0.9], log sigma2_p1, log sigma2_p2)
 .nll_bivar_eigen <- function(par, prep) {
   h2_1 <- stats::plogis(par[1]); h2_2 <- stats::plogis(par[2])
-  rG   <- tanh(par[3]);          rE   <- tanh(par[4])
+  rG   <- 0.9 * tanh(par[3]);    rE   <- 0.9 * tanh(par[4])
   s1   <- exp(par[5]);           s2   <- exp(par[6])
 
   sg1 <- h2_1 * s1; sg2 <- h2_2 * s2
@@ -124,16 +143,19 @@
 
 .fit_bivar_full <- function(y1, y2, A) {
   prep <- .bivar_eigen_prep(y1, y2, A)
-  # Data-driven scale starts: assuming unit variance (log(1)=0) fails badly
-  # for traits that aren't INT-transformed and have a large or small raw
-  # variance (e.g. a raw score in the thousands, or a proportion near 0-1).
+  # Data-driven scale starts: assuming unit variance (log(1)=0) as the ONLY
+  # start fails badly for traits with a large or small raw variance; a
+  # data-driven start plus SOLAR's own conventional start (h2r=0.1) both
+  # guard against that, and against local optima on weakly-identified pairs.
   s1_0 <- log(max(var(y1), 1e-8))
   s2_0 <- log(max(var(y2), 1e-8))
+  h2_0 <- qlogis(0.1)
   starts <- list(
+    c(h2_0, h2_0, 0, 0, s1_0, s2_0),
     c(0, 0, 0, 0, s1_0, s2_0),
     c(0.5, 0.5, 0.5, 0.5, s1_0, s2_0),
     c(-0.5, -0.5, 0.2, 0.2, s1_0, s2_0),
-    c(0, 0, 0, 0, 0, 0)  # retain the old unit-variance start as a fallback
+    c(0, 0, 0, 0, 0, 0)  # unit-variance fallback
   )
   best <- NULL
   for (st in starts) {
@@ -155,7 +177,7 @@
   if (!is.null(op2) && op2$value < best$value) best <- op2
 
   h2_1 <- stats::plogis(best$par[1]); h2_2 <- stats::plogis(best$par[2])
-  rG   <- tanh(best$par[3]);          rE   <- tanh(best$par[4])
+  rG   <- 0.9 * tanh(best$par[3]);    rE   <- 0.9 * tanh(best$par[4])
   list(h2_1 = h2_1, h2_2 = h2_2, rhoG = rG, rhoE = rE,
       loglik = -best$value, par = best$par, prep = prep)
 }
@@ -194,7 +216,7 @@
 # triggered when there IS missingness in one of the two traits).
 .nll_bivar_unbalanced <- function(par, y1, y2, A, has_y1, has_y2) {
   h2_1 <- stats::plogis(par[1]); h2_2 <- stats::plogis(par[2])
-  rG   <- tanh(par[3]);          rE   <- tanh(par[4])
+  rG   <- 0.9 * tanh(par[3]);    rE   <- 0.9 * tanh(par[4])
   s1   <- exp(par[5]);           s2   <- exp(par[6])
   n <- nrow(A)
   sg1 <- h2_1 * s1; sg2 <- h2_2 * s2
@@ -227,12 +249,9 @@
   y2z <- y2; y2z[!has_y2] <- 0
   s1_0 <- log(max(stats::var(y1[has_y1]), 1e-8))
   s2_0 <- log(max(stats::var(y2[has_y2]), 1e-8))
-  # Each likelihood evaluation here is a full Cholesky over the unbalanced
-  # joint covariance (no eigenbasis shortcut applies), so it is far more
-  # expensive per-call than the balanced path. Empirically (verified against
-  # the Gomes et al. dataset) these two starts reliably reach the same
-  # optimum as a wider 4-start search at ~2x the speed.
+  h2_0 <- qlogis(0.1)
   starts <- list(
+    c(h2_0, h2_0, 0, 0, s1_0, s2_0),
     c(-0.5, -0.5, 0.2, 0.2, s1_0, s2_0),
     c(0, 0, 0, 0, 0, 0)
   )
@@ -248,7 +267,7 @@
   }
 
   h2_1 <- stats::plogis(best$par[1]); h2_2 <- stats::plogis(best$par[2])
-  rG   <- tanh(best$par[3]);          rE   <- tanh(best$par[4])
+  rG   <- 0.9 * tanh(best$par[3]);    rE   <- 0.9 * tanh(best$par[4])
   list(h2_1 = h2_1, h2_2 = h2_2, rhoG = rG, rhoE = rE,
       loglik = -best$value, par = best$par)
 }
