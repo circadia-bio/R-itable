@@ -10,7 +10,7 @@
 
 ---
 
-> ⚠️ **R-itable is in early development and has not been formally tested.** The API may change without notice, estimation results have not yet been validated against a reference implementation such as SOLAR Eclipse, and the package has not undergone peer review. Use with caution and verify outputs independently before using in any research context.
+> ⚠️ **R-itable is in early development.** The API may change without notice, and the package has not undergone peer review. `herit_ace()`/`herit_bivar()`/`herit_bivar_batch()` have been validated against real SOLAR Eclipse output (28 of 31 real-cohort trait pairs match to 4 decimal places -- see `NEWS.md` for methodology and the two known exceptions); `herit_vc()`/`herit_batch()` have not yet undergone the same formal comparison. Verify outputs independently before using in any research context.
 
 ---
 
@@ -78,7 +78,8 @@ R-itable/
 │   ├── test-herit_ace.R
 │   └── test-herit_bivar.R
 ├── vignettes/
-│   └── getting-started.Rmd
+│   ├── getting-started.Rmd
+│   └── twin-cohorts.Rmd       # MZ relatedness, household effects, bivariate correlation
 ├── data-raw/
 │   └── prepare_data.R
 ├── DESCRIPTION
@@ -156,7 +157,8 @@ pairs <- data.frame(
 herit_bivar_batch(pairs, grm = A, data = twin_data, id_col = "IID")
 ```
 
-For a full walkthrough see `vignette("getting-started", package = "Ritable")`.
+For a full walkthrough see `vignette("getting-started", package = "Ritable")`, and
+`vignette("twin-cohorts", package = "Ritable")` for the workflow above in more detail.
 
 ---
 

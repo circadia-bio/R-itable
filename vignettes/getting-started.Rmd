@@ -30,6 +30,10 @@ The three main steps are:
 2. Estimate heritability for one trait with `herit_vc()`.
 3. Scale to many traits with `herit_batch()`, then visualise with `plot_forest()`.
 
+For twin cohorts specifically -- monozygotic relatedness, household/shared-
+environment effects, and bivariate genetic/environmental correlations between
+two traits -- see `vignette("twin-cohorts")` instead/in addition.
+
 ---
 
 ## 1. Build the GRM
@@ -268,6 +272,6 @@ If you use **R-itable** in a publication, please cite:
 
 ```
 Franca, L. & Leocadio-Miguel, M. (2026). R-itable: Pedigree-Based Heritability
-Estimation for Family Cohort Studies. R package version 0.1.0.
+Estimation for Family Cohort Studies. R package version 0.2.0.
 https://github.com/circadia-bio/R-itable
 ```

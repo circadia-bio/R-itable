@@ -196,6 +196,7 @@ articles:
   navbar: ~
   contents:
   - getting-started
+  - twin-cohorts
 
 news:
   releases:

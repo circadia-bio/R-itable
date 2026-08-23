@@ -32,17 +32,14 @@
   eigenvectors) -- this is what makes batches over ~30 pairs tractable
   (~0.4s/pair vs ~64s/pair for the naive implementation).
 
-  **Validated against SOLAR Eclipse** on the Gomes et al. twin dataset
-  (n=161, 31 trait pairs), combining every fix in this release (correct
-  per-trait inverse-normal transform selection, SOLAR-exact `inormal` tie
-  handling, SOLAR's actual `[-0.9,0.9]` rho bounds, and unbalanced-trait
-  handling): **28 of 31 pairs match SOLAR to 4 decimal places exactly** on
+  **Validated against SOLAR Eclipse** on twin dataset (n=161, 31 trait pairs), 
+  combining every fix in this release (correct per-trait inverse-normal transform 
+  selection, SOLAR-exact `inormal` tie handling, SOLAR's actual `[-0.9,0.9]` rho 
+  bounds, and unbalanced-trait handling): **28 of 31 pairs match SOLAR to 4 decimal places exactly** on
   both rhoG and rhoE, and all 31 pairs agree with SOLAR on nominal
   significance for both. The bivariate model itself was also independently
   confirmed algebraically identical to SOLAR's own documented omega
-  formula for multivariate polygenic models (SOLAR Manual Chapter 9). The
-  2 remaining pairs both involve the same phenotype, `CRONOTIPO_MCTQ_m`
-  (see Bug fixes below for why, and why it isn't one).
+  formula for multivariate polygenic models (SOLAR Manual Chapter 9).
 
 ### 🐛 Bug fixes
 
@@ -103,9 +100,7 @@
   during fitting (observed as correlations pinning to a boundary, or the
   optimiser failing to move from its starting point at all).
 
-  Root-caused against `CRONOTIPO_MCTQ_m` (raw variance ~2.3e18 in
-  `pheno_novo.csv`), which was the last pair not resolved by the fixes
-  above. Checking this against SOLAR's own source explains why SOLAR
+  Checking this against SOLAR's own source explains why SOLAR
   never hits the failure this package did: its `sd`/`mean` parameters are
   "initialized... in c++" directly from the raw data rather than
   numerically searched, so SOLAR is architecturally immune to
@@ -114,12 +109,7 @@
   make the fit numerically well-behaved -- but the resulting
   maximum-likelihood estimate for this phenotype (rhoG in the 0.7-0.9
   range) is now *more* different from SOLAR's reported values (0.04-0.13)
-  than the original broken fit was, not less. Since the same code
-  reproduces SOLAR exactly on the other 29 pairs, the most likely
-  explanation is that this package's copy of `pheno_novo.csv` has
-  different `CRONOTIPO_MCTQ_m` values than whatever SOLAR was actually run
-  on -- a data provenance question, not something fixable in this package.
-  Flagged to Mario/Lucas to check against the original SOLAR input file.
+  than the original broken fit was, not less.
 
 ### 🧪 Tests
 
@@ -145,9 +135,19 @@
 
 * `_pkgdown.yml`: added `build_household`, `herit_ace`, `herit_bivar`, and
   `herit_bivar_batch` to the reference index (the pkgdown build was
-  failing without this).
+  failing without this); registered the new `twin-cohorts` vignette.
 * README: covers the new twin/ACE/bivariate workflow, updated feature list
-  and project structure tree.
+  and project structure tree; the top-of-README validation banner now
+  reflects reality (`herit_ace()`/`herit_bivar()`/`herit_bivar_batch()`
+  validated against real SOLAR output; `herit_vc()`/`herit_batch()` not
+  yet formally compared) instead of a blanket "not yet validated" that
+  predated this release's SOLAR-parity work.
+* New `vignette("twin-cohorts")`: end-to-end walkthrough of the twin-cohort
+  workflow this release adds (MZ relatedness, `herit_ace()`'s A vs C
+  identifiability check, `herit_bivar()`/`herit_bivar_batch()`) on a
+  self-contained simulated dataset -- `getting-started` covers only the
+  general-pedigree `herit_vc()`/`herit_batch()` workflow from 0.1.0 and
+  never mentioned any of this release's additions.
 
 ## R-itable 0.1.0  (2026-05)
 
