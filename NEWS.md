@@ -54,20 +54,29 @@
   units/encoding problem upstream in `pheno_novo.csv` -- flagged for
   Mario/Lucas to check independently of this package.
 
-* `int_transform()` gains a `method` argument. `"vdw"` (Van der Waerden,
-  1952: `qnorm(r/(n+1))`) is now the **default**, since this is what SOLAR
-  Eclipse's `inormal` command actually uses (confirmed against SOLAR's own
-  documentation and independent technical references) -- the previous
-  docstring's claim that the old Blom-style formula "is the standard
-  transformation used in SOLAR Eclipse" was incorrect. `"blom"`
-  (`qnorm((r-0.5)/n)`) is retained as an explicit option for continuity with
-  R-itable <= 0.2.0 and for anyone who wants that formula specifically.
-  **This changes the default numeric output of `int_transform()`,
-  `herit_vc()`, `herit_batch()`, `herit_ace()`, and `herit_bivar()`** for
-  any call using the default `transform`/`method` settings; results will
-  shift slightly (the two formulas agree closely except in small samples or
-  under heavy ties). Pass `method = "blom"` (for `int_transform()`) to
-  reproduce pre-0.2.0 numeric output exactly.
+* `int_transform()` gains a `method` argument. `"vdw"` is now the
+  **default**, and it exactly replicates SOLAR Eclipse's `inormal` command
+  -- confirmed by reading SOLAR's actual source (`lib/solar.tcl`, `proc
+  inormal`, cloned from `github.com/kochunov/solar-eclipse`), not just its
+  documentation. The previous docstring's claim that R-itable's old
+  Blom-style formula "is the standard transformation used in SOLAR
+  Eclipse" was incorrect, and an intermediate fix within this same release
+  (a plain Van der Waerden `qnorm(r/(n+1))`, correct only for untied data)
+  was still subtly wrong under ties. SOLAR's actual tie-handling, now
+  replicated exactly: for a block of tied values spanning sorted rank
+  positions `i` to `j`, average `qnorm(i/(n+1)), ..., qnorm(j/(n+1))` --
+  i.e. average the *z-scores* of the individual rank positions, not the
+  z-score of the *averaged* rank. These differ whenever a nonlinear
+  `qnorm` is applied to a tied block that isn't symmetric around the
+  middle of the sample (e.g. a large block of tied zeros in a
+  zero-inflated phenotype). `"blom"` (`qnorm((r-0.5)/n)`, conventional
+  rank-average tie handling) is retained as an explicit option for
+  continuity with R-itable <= 0.2.0. **This changes the default numeric
+  output of `int_transform()`, `herit_vc()`, `herit_batch()`,
+  `herit_ace()`, and `herit_bivar()`** for any call using the default
+  `transform`/`method` settings, particularly for heavily-tied traits.
+  Pass `method = "blom"` (for `int_transform()`) to reproduce pre-0.2.0
+  numeric output exactly.
 
 * `herit_bivar()` gains proper support for single-trait missing data.
   Previously, any individual missing either trait was dropped via a
@@ -76,8 +85,8 @@
   likelihood, matching SOLAR Eclipse's default `UnbalancedTraits` behaviour
   (only individuals missing *both* traits, or the ID, are excluded). This
   is both more statistically appropriate (uses more of the available data
-  under the usual MAR assumption) and moves estimates measurably closer to
-  SOLAR on affected pairs. The returned list gains `n` (all contributing
+  under the usual MAR assumption) and matches SOLAR much more closely on
+  affected pairs. The returned list gains `n` (all contributing
   individuals) and `n_complete` (individuals with both traits observed);
   `n` is now the primary sample-size figure, matching SOLAR's convention.
   When neither trait has missing data (the common case) this is a no-op --
@@ -86,30 +95,30 @@
   traits.
 
   **Final validation against SOLAR Eclipse** on the Gomes et al. twin
-  dataset (n=161, 31 trait pairs), combining all three fixes in this
-  release (correct per-trait inverse-normal transform selection,
-  data-driven optimiser starting values, and unbalanced-trait handling):
-  mean |delta rhoG| = 0.012, mean |delta rhoE| = 0.010; median |delta rhoG|
-  = 0.0004, median |delta rhoE| = 0.0006 -- the *typical* pair now matches
-  SOLAR to 4 decimal places. 22/31 pairs agree with SOLAR to within 0.002
-  on both correlations, and all 31 pairs agree on nominal significance for
-  both rhoG and rhoE (up from 29/31 and 31/31 before these fixes). Not
-  bit-identical to SOLAR -- and this is not achievable in principle between
-  two independent numerical optimisers -- but the remaining gap is now
-  small, well-characterised, and concentrated in two identified causes
-  rather than diffuse numerical noise:
+  dataset (n=161, 31 trait pairs), combining every fix in this release
+  (correct per-trait inverse-normal transform selection, the SOLAR-exact
+  `inormal` tie handling above, data-driven optimiser starting values, and
+  unbalanced-trait handling): **29 of 31 pairs now match SOLAR to 4
+  decimal places exactly** on both rhoG and rhoE (mean |delta rhoG| =
+  0.010, mean |delta rhoE| = 0.009, both driven entirely by the 2
+  remaining pairs below; median |delta rhoG| = |delta rhoE| = 0.0000).
+  All 31 pairs agree with SOLAR on nominal significance for both rhoG and
+  rhoE. The bivariate model itself was also independently confirmed
+  algebraically identical to SOLAR's own documented omega formula for
+  multivariate polygenic models (SOLAR Manual Chapter 9). The 2 remaining
+  pairs both involve the same phenotype:
 
-  1. `CRONOTIPO_MCTQ_m` has an anomalous raw variance (~2.3e18, values in
-     the billions) strongly suggestive of a units/encoding problem upstream
-     in `pheno_novo.csv`, independent of this package (flagged to
-     Mario/Lucas separately).
-  2. `DR_ATV_m`/`DR_ATM_m` (both heavily zero-inflated, 27-46% tied values)
-     have a genuinely hard, close-to-flat likelihood surface in this
-     region of parameter space; SOLAR's own documentation describes
-     extensive ad hoc "boundary crunching" heuristics for exactly this
-     class of convergence difficulty, so some residual disagreement between
-     two different optimisers on these specific traits is expected even
-     with an algorithmically identical model.
+  `CRONOTIPO_MCTQ_m` has an anomalous raw variance (~2.3e18, values in the
+  billions) strongly suggestive of a units/encoding problem upstream in
+  `pheno_novo.csv`, independent of this package -- flagged to Mario/Lucas
+  separately, not something this package can or should paper over.
+
+  (An earlier hypothesis in this release's development -- that the
+  remaining gap on `DR_ATV_m`/`DR_ATM_m`/`DR_ATL_m` reflected an
+  inherently hard, flat likelihood surface under heavy zero-inflation --
+  turned out to be wrong; those pairs are now resolved exactly by the
+  `inormal` tie-handling fix above, once the actual SOLAR source was read
+  rather than assumed.)
 
 ## R-itable 0.1.0  (2026-05)
 

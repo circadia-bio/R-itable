@@ -57,36 +57,29 @@
 #' Eclipse's default `UnbalancedTraits` behaviour (individuals are only
 #' excluded if *both* traits, or the ID, are missing). This is both more
 #' statistically appropriate than dropping them (more information used under
-#' the usual MAR assumption) and matches SOLAR numerically much more closely
-#' than a complete-case restriction -- verified on the Gomes et al. dataset,
-#' where a complete-case restriction gave rhoG = -0.879 for a pair with
-#' missing data on one trait, vs SOLAR's -0.638; the unbalanced likelihood
-#' gives -0.787, closer but not exact (the remaining gap on this specific
-#' pair reflects a hard, heavily zero-inflated distribution -- see NEWS.md).
-#' When neither trait has missing data (the common
-#' case), this reduces to the same fast eigenbasis computation as before --
-#' the unbalanced path is only used when needed, since it cannot exploit the
-#' eigenbasis shortcut (the missingness pattern is individual-specific, so
-#' the joint covariance no longer shares a common eigenbasis with `A` across
-#' all n individuals).
+#' the usual MAR assumption) and matches SOLAR exactly on affected pairs once
+#' combined with the SOLAR-exact `inormal` tie handling in [int_transform()]
+#' (see NEWS.md for validation). When neither trait has missing data (the
+#' common case), this reduces to the same fast eigenbasis computation as
+#' before -- the unbalanced path is only used when needed, since it cannot
+#' exploit the eigenbasis shortcut (the missingness pattern is individual-
+#' specific, so the joint covariance no longer shares a common eigenbasis
+#' with `A` across all n individuals).
 #'
 #' As with [herit_ace()], the unbalanced path uses direct numerical ML over
 #' the full covariance matrix rather than an eigendecomposition shortcut.
 #'
-#' Results are validated against, but not bit-identical to, SOLAR Eclipse
-#' output (differences arise from ML vs SOLAR's exact optimiser and variance
-#' parametrisation). Validated on the Gomes et al. twin dataset (31 trait
-#' pairs) with the correct SOLAR-matching inverse-normal transform selection
-#' (see [int_transform()]) and unbalanced-trait handling: mean |delta rhoG| =
-#' 0.012, mean |delta rhoE| = 0.010, median |delta rhoG| = 0.0004, median
-#' |delta rhoE| = 0.0006 -- the typical pair matches SOLAR to 4 decimal
-#' places. 22/31 pairs agree with SOLAR to within 0.002 on both rhoG and
-#' rhoE, and 31/31 agree on nominal significance for both. The remaining
-#' discrepancy is concentrated in one phenotype with an anomalous raw
-#' variance (data-quality issue independent of this package) and two
-#' phenotypes with heavy zero-inflation (>25% tied values), where the
-#' likelihood surface is inherently harder to optimise exactly -- see
-#' NEWS.md for details.
+#' Validated on the Gomes et al. twin dataset (31 trait pairs), combining
+#' correct per-trait inverse-normal transform selection, SOLAR-exact
+#' `inormal` tie handling (see [int_transform()]), data-driven optimiser
+#' starting values, and unbalanced-trait handling: 29 of 31 pairs match
+#' SOLAR Eclipse to 4 decimal places exactly on both rhoG and rhoE, and all
+#' 31 pairs agree on nominal significance for both. The bivariate model's
+#' omega was also independently confirmed algebraically identical to
+#' SOLAR's own documented formula for multivariate polygenic models (SOLAR
+#' Manual Chapter 9). The 2 remaining pairs both involve a single phenotype
+#' with an anomalous raw variance (a data-quality issue independent of this
+#' package, not a modelling gap) -- see NEWS.md.
 #'
 #' @seealso [build_grm()], [herit_vc()], [herit_ace()], [herit_bivar_batch()]
 #' @importFrom stats complete.cases pchisq var

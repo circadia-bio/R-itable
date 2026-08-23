@@ -9,14 +9,22 @@ int_transform(x, method = c("vdw", "blom"), ties = "average")
 \arguments{
 \item{x}{Numeric vector. \code{NA}s are preserved.}
 
-\item{method}{Which INT formula to use. \code{"vdw"} (default) is the
-Van der Waerden (1952) transformation, \verb{\\Phi^\{-1\}(r_i / (n+1))}, which
-is what SOLAR Eclipse's \code{inormal} command actually uses. \code{"blom"} is
-the Blom (1958) transformation, \verb{\\Phi^\{-1\}((r_i - 0.5) / n)}, used by
-R-itable prior to this fix under the (incorrect) belief that it
+\item{method}{Which INT formula to use. \code{"vdw"} (default) exactly
+replicates SOLAR Eclipse's \code{inormal} command, confirmed against SOLAR's
+actual source (\code{lib/solar.tcl}, \verb{proc inormal}): sort ascending, assign
+\code{z_i = qnorm(i / (n+1))} to each individual rank position \code{i}, and for
+tied values average the resulting \emph{z-scores} of their individual rank
+positions (not the z-score of the averaged rank -- these differ for
+nonlinear qnorm whenever a tied block is not symmetric around n/2,
+e.g. a large block of tied values at one tail, such as zero-inflated
+phenotypes). \code{"blom"} is the Blom (1958) transformation,
+\code{qnorm((r-0.5)/n)} with conventional averaged-rank tie handling, used
+by R-itable prior to this fix under the (incorrect) belief that it
 matched SOLAR.}
 
-\item{ties}{Method passed to \code{\link[base:rank]{base::rank()}}. Default \code{"average"}.}
+\item{ties}{Method passed to \code{\link[base:rank]{base::rank()}} when \code{method = "blom"}.
+Ignored for \code{method = "vdw"}, which always uses SOLAR's own tie
+handling (see Details). Default \code{"average"}.}
 }
 \value{
 A numeric vector of the same length as \code{x}, with \code{NA}s in the same
@@ -27,26 +35,31 @@ Applies a rank-based inverse-normal transformation (INT) to a numeric
 vector, placing empirical quantiles onto a standard normal scale.
 }
 \details{
-For \code{method = "vdw"} (default):
-\deqn{\Phi^{-1}\!\left(\frac{r_i}{n+1}\right)}
+For \code{method = "vdw"} with no ties, this is the Van der Waerden (1952)
+transformation, \code{qnorm(r_i / (n+1))}, and is bit-identical to it. With
+ties, tied individuals get the mean of \code{qnorm(i/(n+1))} over the tied
+rank positions \code{i}, exactly matching SOLAR's \code{inormal}. This distinction
+only matters for heavily-tied data; it was confirmed to fully resolve
+the remaining discrepancy between R-itable and SOLAR Eclipse on
+zero-inflated phenotypes in the Gomes et al. validation dataset (\eqn{>}
+25\% tied values) -- see NEWS.md.
+
 For \code{method = "blom"}:
 \deqn{\Phi^{-1}\!\left(\frac{r_i - 0.5}{n}\right)}
-where \eqn{r_i} is the rank of observation \eqn{i} and \eqn{n} is the
-number of non-missing observations.
-
-Van der Waerden is SOLAR Eclipse's actual \code{inormal} formula (confirmed
-against SOLAR's documentation and independent technical references); it
-is the default here so that \code{\link[=herit_vc]{herit_vc()}}, \code{\link[=herit_ace]{herit_ace()}}, and
-\code{\link[=herit_bivar]{herit_bivar()}} match SOLAR's convention out of the box. \code{"blom"} is
-retained as an option for continuity with earlier R-itable versions and
-for users who specifically want that formula for other reasons. The two
-formulas agree closely for moderate-to-large n and differ more near the
-extremes of small samples or heavily tied data.
+using \code{\link[base:rank]{base::rank()}}'s \code{ties} argument for tie handling (default
+\code{"average"}, i.e. the z-score of the averaged rank -- the conventional
+approach for this formula, not SOLAR's).
 }
 \examples{
 set.seed(1)
 x <- rexp(200, rate = 0.5)   # right-skewed
 hist(x,              main = "Raw")
-hist(int_transform(x), main = "INT (Van der Waerden)")
+hist(int_transform(x), main = "INT (SOLAR-matching Van der Waerden)")
+
+# Heavy ties (e.g. zero-inflated activity duration): SOLAR's tie handling
+# (default) differs meaningfully from naive rank-average tie handling.
+y <- c(rep(0, 40), round(runif(60, 1, 100)))
+int_transform(y)[1]                        # SOLAR-exact
+qnorm(rank(y, ties.method = "average")[1] / (length(y) + 1))  # naive
 
 }
