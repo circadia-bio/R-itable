@@ -30,21 +30,43 @@ jobs:
 
       - uses: r-lib/actions/setup-r-dependencies@v2
         with:
-          extra-packages: any::pkgdown, any::roxygen2, local::.
+          extra-packages: any::pkgdown, any::covr, local::.
           needs: website
 
-      - name: Generate documentation
-        run: roxygen2::roxygenise()
-        shell: Rscript {0}
-
       - name: Build site
-        run: pkgdown::build_site(new_process = FALSE, install = FALSE)
+        run: pkgdown::build_site_github_pages(new_process = FALSE, install = FALSE)
         shell: Rscript {0}
 
-      - name: Deploy to gh-pages branch
+      - name: Test coverage
+        run: |
+          cov <- covr::package_coverage()
+          print(cov)
+          pct <- covr::percent_coverage(cov)
+          cat(sprintf("\nOverall coverage: %.1f%%\n", pct))
+
+          # Only write (and later deploy) the badge JSON on pushes to
+          # main/master/release -- PRs still get the coverage report above
+          # printed to the log as a check, just without touching docs/.
+          if (Sys.getenv("GITHUB_EVENT_NAME") != "pull_request") {
+            col <- if (pct >= 90) "brightgreen" else if (pct >= 80) "green" else
+                   if (pct >= 70) "yellowgreen" else if (pct >= 60) "yellow" else
+                   if (pct >= 50) "orange" else "red"
+            dir.create("docs/badges", recursive = TRUE, showWarnings = FALSE)
+            json <- sprintf(
+              '{"schemaVersion":1,"label":"coverage","message":"%.1f%%","color":"%s"}',
+              pct, col
+            )
+            writeLines(json, "docs/badges/coverage.json")
+            cat("Wrote docs/badges/coverage.json ->", col, "\n")
+          }
+        shell: Rscript {0}
+        env:
+          GITHUB_EVENT_NAME: ${{ github.event_name }}
+
+      - name: Deploy to GitHub pages 🚀
         if: github.event_name != 'pull_request'
         uses: JamesIves/github-pages-deploy-action@d92aa235d04922e8f08b40ce78cc5442fcfbfa2f
         with:
-          clean: true
+          clean: false
           branch: gh-pages
           folder: docs
