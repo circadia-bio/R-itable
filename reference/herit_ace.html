@@ -104,7 +104,7 @@ workflow (see solar_full_analysis.tcl, Part 3)."><meta property="og:image" conte
 
     <a class="navbar-brand me-2" href="../index.html">Ritable</a>
 
-    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.0</small>
+    <small class="nav-text text-muted me-auto" data-bs-toggle="tooltip" data-bs-placement="bottom" title="">0.2.1</small>
 
 
     <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbar" aria-controls="navbar" aria-expanded="false" aria-label="Toggle navigation">
@@ -160,6 +160,9 @@ workflow (see <code>solar_full_analysis.tcl</code>, Part 3).</p>
 <span>  <span class="va">grm</span>,</span>
 <span>  <span class="va">household</span>,</span>
 <span>  <span class="va">data</span>,</span>
+<span>  covs <span class="op">=</span> <span class="cn">NULL</span>,</span>
+<span>  screen <span class="op">=</span> <span class="cn">TRUE</span>,</span>
+<span>  prob_level <span class="op">=</span> <span class="fl">0.1</span>,</span>
 <span>  id_col <span class="op">=</span> <span class="st">"IID"</span>,</span>
 <span>  transform <span class="op">=</span> <span class="cn">TRUE</span>,</span>
 <span>  min_n <span class="op">=</span> <span class="fl">80L</span>,</span>
@@ -186,7 +189,28 @@ by <code><a href="build_household.html">build_household()</a></code>. Must have 
 
 
 <dt id="arg-data">data<a class="anchor" aria-label="anchor" href="#arg-data"></a></dt>
-<dd><p>Data frame containing <code>id_col</code> and <code>trait</code>.</p></dd>
+<dd><p>Data frame containing <code>id_col</code>, <code>trait</code>, and any <code>covs</code>.</p></dd>
+
+
+<dt id="arg-covs">covs<a class="anchor" aria-label="anchor" href="#arg-covs"></a></dt>
+<dd><p>Optional character vector of covariate column names in <code>data</code>
+(e.g. <code>c("age", "sex", "age_sex", "age2", "age2_sex")</code> for SOLAR's
+standard age/sex/age<em>sex/age^2/age^2</em>sex set – construct interaction
+and polynomial terms as ordinary columns before calling, same
+convention as <code><a href="herit_vc.html">herit_vc()</a></code>). Covariates are standardised internally.
+Default <code>NULL</code> (no covariates, matching prior behaviour exactly).</p></dd>
+
+
+<dt id="arg-screen">screen<a class="anchor" aria-label="anchor" href="#arg-screen"></a></dt>
+<dd><p>Logical. If <code>covs</code> is given, apply SOLAR-style automatic
+covariate screening (see Details) rather than including all of <code>covs</code>
+unconditionally. Default <code>TRUE</code>. Ignored if <code>covs</code> is <code>NULL</code>.</p></dd>
+
+
+<dt id="arg-prob-level">prob_level<a class="anchor" aria-label="anchor" href="#arg-prob-level"></a></dt>
+<dd><p>Screening significance threshold. Default <code>0.10</code>,
+matching SOLAR Eclipse's own default (confirmed from source,
+<code>lib/solar.tcl</code> <code>proc polygenic</code>: <code>set probability_level 0.1</code>).</p></dd>
 
 
 <dt id="arg-id-col">id_col<a class="anchor" aria-label="anchor" href="#arg-id-col"></a></dt>
@@ -217,7 +241,8 @@ phenotypes.</p></dd>
 <dd><p>Sample size after dropping missing values.</p></dd>
 
 <dt><code>loglik_sporadic</code>, <code>loglik_ae</code>, <code>loglik_ce</code>, <code>loglik_ace</code></dt>
-<dd><p>Log-likelihoods of the four nested models.</p></dd>
+<dd><p>Log-likelihoods of the four nested models (all fit with the same
+final covariate set – see Details).</p></dd>
 
 <dt><code>h2_ae</code></dt>
 <dd><p>Heritability under the AE model.</p></dd>
@@ -240,6 +265,16 @@ are not jointly identifiable in this sample – report the simpler AE
 model (see package vignette / Leocadio-Miguel et al. companion
 analyses).</p></dd>
 
+<dt><code>covs_tested</code>, <code>covs_kept</code>, <code>covs_dropped</code></dt>
+<dd><p>Present only if
+<code>covs</code> was supplied and <code>screen = TRUE</code>: the full candidate list,
+the ones retained (p &lt; <code>prob_level</code>), and the ones dropped.</p></dd>
+
+<dt><code>covariate_lrt_p</code></dt>
+<dd><p>Present only if <code>covs</code> was supplied and
+<code>screen = TRUE</code>: named numeric vector of each candidate covariate's
+individual LRT p-value against the full-covariate AE model.</p></dd>
+
 
 </dl><p>Returns <code>NULL</code> if <code>n &lt; min_n</code>.</p>
     </div>
@@ -253,8 +288,25 @@ in general share eigenvectors.</p>
 <p><strong>Model:</strong> <code>Omega = sigma2_p * [h2*A + c2*C + (1 - h2 - c2)*I]</code>, jointly
 estimated for the ACE model via multi-start Nelder-Mead on a
 logit-reparametrised <code>(h2, c2)</code> (guaranteeing <code>h2, c2 &gt;= 0</code> and
-<code>h2 + c2 &lt; 1</code>); AE and CE are 1-D special cases.</p>
-<p><strong>LRTs:</strong> one-sided chi-squared(1) boundary correction, as in
+<code>h2 + c2 &lt; 1</code>); AE and CE are 1-D special cases. Covariates (if any)
+enter the mean structure: <code>E[y] = X %*% beta</code>, with <code>X</code> including an
+intercept plus the (standardised) columns named in <code>covs</code>.</p>
+<p><strong>Covariate screening</strong> (when <code>covs</code> is given and <code>screen = TRUE</code>):
+matches SOLAR Eclipse's <code>polygenic -screen</code>, confirmed from source
+(<code>lib/solar.tcl</code> <code>proc polygenic</code>) rather than assumed. SOLAR's
+algorithm is a <strong>single pass</strong>, not iterative backward elimination: fit
+the AE model with <em>all</em> candidate covariates, then for each covariate
+individually, fit the AE model with just that one covariate removed and
+compute a likelihood-ratio test against the full-covariate model
+(chi-squared(1), not boundary-corrected, since a covariate coefficient
+is not a boundary parameter). Any covariate with p &gt;= <code>prob_level</code> is
+dropped; all remaining covariates are kept. This happens once, against
+the AE model specifically (not separately for CE/ACE) – SOLAR's own
+script can in principle screen separately per model context, but using
+one shared covariate set for all four nested models here keeps the
+sporadic/AE/CE/ACE comparisons validly nested (a valid LRT requires the
+compared models to share the same mean structure).</p>
+<p><strong>LRTs for h2/c2:</strong> one-sided chi-squared(1) boundary correction, as in
 <code><a href="herit_vc.html">herit_vc()</a></code>, since both null hypotheses (<code>c2 = 0</code>, or <code>h2 = 0</code>) sit on
 the boundary of the parameter space.</p>
     </div>

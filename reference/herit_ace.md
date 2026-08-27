@@ -18,6 +18,9 @@ herit_ace(
   grm,
   household,
   data,
+  covs = NULL,
+  screen = TRUE,
+  prob_level = 0.1,
   id_col = "IID",
   transform = TRUE,
   min_n = 80L,
@@ -44,7 +47,30 @@ herit_ace(
 
 - data:
 
-  Data frame containing `id_col` and `trait`.
+  Data frame containing `id_col`, `trait`, and any `covs`.
+
+- covs:
+
+  Optional character vector of covariate column names in `data` (e.g.
+  `c("age", "sex", "age_sex", "age2", "age2_sex")` for SOLAR's standard
+  age/sex/age*sex/age^2/age^2*sex set – construct interaction and
+  polynomial terms as ordinary columns before calling, same convention
+  as
+  [`herit_vc()`](https://r-itable.circadia-lab.uk/reference/herit_vc.md)).
+  Covariates are standardised internally. Default `NULL` (no covariates,
+  matching prior behaviour exactly).
+
+- screen:
+
+  Logical. If `covs` is given, apply SOLAR-style automatic covariate
+  screening (see Details) rather than including all of `covs`
+  unconditionally. Default `TRUE`. Ignored if `covs` is `NULL`.
+
+- prob_level:
+
+  Screening significance threshold. Default `0.10`, matching SOLAR
+  Eclipse's own default (confirmed from source, `lib/solar.tcl`
+  `proc polygenic`: `set probability_level 0.1`).
 
 - id_col:
 
@@ -79,7 +105,8 @@ A named list with elements:
 
 - `loglik_sporadic`, `loglik_ae`, `loglik_ce`, `loglik_ace`:
 
-  Log-likelihoods of the four nested models.
+  Log-likelihoods of the four nested models (all fit with the same final
+  covariate set – see Details).
 
 - `h2_ae`:
 
@@ -106,6 +133,18 @@ A named list with elements:
   – report the simpler AE model (see package vignette / Leocadio-Miguel
   et al. companion analyses).
 
+- `covs_tested`, `covs_kept`, `covs_dropped`:
+
+  Present only if `covs` was supplied and `screen = TRUE`: the full
+  candidate list, the ones retained (p \< `prob_level`), and the ones
+  dropped.
+
+- `covariate_lrt_p`:
+
+  Present only if `covs` was supplied and `screen = TRUE`: named numeric
+  vector of each candidate covariate's individual LRT p-value against
+  the full-covariate AE model.
+
 Returns `NULL` if `n < min_n`.
 
 ## Details
@@ -122,9 +161,27 @@ eigenvectors.
 **Model:** `Omega = sigma2_p * [h2*A + c2*C + (1 - h2 - c2)*I]`, jointly
 estimated for the ACE model via multi-start Nelder-Mead on a
 logit-reparametrised `(h2, c2)` (guaranteeing `h2, c2 >= 0` and
-`h2 + c2 < 1`); AE and CE are 1-D special cases.
+`h2 + c2 < 1`); AE and CE are 1-D special cases. Covariates (if any)
+enter the mean structure: `E[y] = X %*% beta`, with `X` including an
+intercept plus the (standardised) columns named in `covs`.
 
-**LRTs:** one-sided chi-squared(1) boundary correction, as in
+**Covariate screening** (when `covs` is given and `screen = TRUE`):
+matches SOLAR Eclipse's `polygenic -screen`, confirmed from source
+(`lib/solar.tcl` `proc polygenic`) rather than assumed. SOLAR's
+algorithm is a **single pass**, not iterative backward elimination: fit
+the AE model with *all* candidate covariates, then for each covariate
+individually, fit the AE model with just that one covariate removed and
+compute a likelihood-ratio test against the full-covariate model
+(chi-squared(1), not boundary-corrected, since a covariate coefficient
+is not a boundary parameter). Any covariate with p \>= `prob_level` is
+dropped; all remaining covariates are kept. This happens once, against
+the AE model specifically (not separately for CE/ACE) – SOLAR's own
+script can in principle screen separately per model context, but using
+one shared covariate set for all four nested models here keeps the
+sporadic/AE/CE/ACE comparisons validly nested (a valid LRT requires the
+compared models to share the same mean structure).
+
+**LRTs for h2/c2:** one-sided chi-squared(1) boundary correction, as in
 [`herit_vc()`](https://r-itable.circadia-lab.uk/reference/herit_vc.md),
 since both null hypotheses (`c2 = 0`, or `h2 = 0`) sit on the boundary
 of the parameter space.
