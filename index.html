@@ -154,11 +154,11 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="section level1">
 <div class="page-header">
-<img src="logo.svg" class="logo" alt=""><h1 id="dna-r-itable">🧬 R-itable<a class="anchor" aria-label="anchor" href="#dna-r-itable"></a>
+<img src="logo.svg" class="logo" alt=""><h1 id="dna-r-itable-">🧬 R-itable <a class="anchor" aria-label="anchor" href="#dna-r-itable-"></a>
 </h1>
 </div>
 <p><strong>Profile-likelihood heritability estimation for family cohort studies — no SOLAR required.</strong></p>
-<p><a href="https://cran.r-project.org" class="external-link"><img src="https://img.shields.io/badge/R-%3E%3D4.1-276DC3" alt="R"></a> <a href="./LICENSE.html"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://github.com/circadia-bio/R-itable/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/circadia-bio/R-itable/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R CMD CHECK"></a> <a href="https://lifecycle.r-lib.org/articles/stages.html" class="external-link"><img src="https://img.shields.io/badge/lifecycle-experimental-orange.svg" alt="Lifecycle: experimental"></a> <a href="https://github.com/circadia-bio/R-itable" class="external-link"><img src="https://img.shields.io/badge/status-early%20development-orange" alt="Status"></a></p>
+<p><a href="https://circadia-bio.r-universe.dev/Ritable" class="external-link"><img src="https://circadia-bio.r-universe.dev/badges/Ritable" alt="r-universe"></a> <a href="./LICENSE.html"><img src="https://img.shields.io/badge/License-MIT-yellow.svg" alt="License: MIT"></a> <a href="https://www.r-project.org/" class="external-link"><img src="https://img.shields.io/badge/R-%3E%3D4.1-276DC3" alt="R"></a> <a href="https://github.com/circadia-bio/R-itable/actions/workflows/R-CMD-check.yaml" class="external-link"><img src="https://github.com/circadia-bio/R-itable/actions/workflows/R-CMD-check.yaml/badge.svg" alt="R CMD CHECK"></a> <a href="https://github.com/circadia-bio/R-itable/actions/workflows/pkgdown.yaml" class="external-link"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/circadia-bio/R-itable/gh-pages/badges/coverage.json" alt="Coverage"></a> <a href="https://github.com/circadia-bio/R-itable" class="external-link"><img src="https://img.shields.io/badge/status-early%20development-orange" alt="Status"></a> <a href="https://r-itable.circadia-lab.uk"><img src="https://img.shields.io/badge/docs-r--itable.circadia--lab.uk-F0A500" alt="pkgdown"></a></p>
 <hr>
 <blockquote>
 <p>⚠️ <strong>R-itable is in early development.</strong> The API may change without notice, and the package has not undergone peer review. <code><a href="reference/herit_ace.html">herit_ace()</a></code>/<code><a href="reference/herit_bivar.html">herit_bivar()</a></code>/<code><a href="reference/herit_bivar_batch.html">herit_bivar_batch()</a></code> have been validated against real SOLAR Eclipse output (28 of 31 real-cohort trait pairs match to 4 decimal places – see <code>NEWS.md</code> for methodology and the two known exceptions); <code><a href="reference/herit_vc.html">herit_vc()</a></code>/<code><a href="reference/herit_batch.html">herit_batch()</a></code> have not yet undergone the same formal comparison. Verify outputs independently before using in any research context.</p>
@@ -188,62 +188,26 @@
 <hr>
 </div>
 <div class="section level2">
-<h2 id="card_index_dividers-project-structure">🗂️ Project Structure<a class="anchor" aria-label="anchor" href="#card_index_dividers-project-structure"></a>
-</h2>
-<pre><code>R-itable/
-├── R/
-│   ├── Ritable-package.R      # package-level docs and colour palette
-│   ├── build_grm.R            # build additive GRM from pedigree (incl. MZ twins)
-│   ├── build_household.R      # build household/shared-environment matrix
-│   ├── int_transform.R        # rank-based inverse-normal transform
-│   ├── herit_vc.R             # single-trait VC estimator
-│   ├── herit_batch.R          # batch wrapper
-│   ├── herit_ace.R            # A vs C identifiability (sporadic/AE/CE/ACE)
-│   ├── herit_bivar.R          # bivariate genetic/environmental correlation
-│   ├── vc_utils.R             # internal general-ML helpers (ACE, bivariate)
-│   └── plot_forest.R          # ggplot2 forest plot
-├── tests/testthat/
-│   ├── helper-fixtures.R      # shared synthetic pedigree/twin/data fixtures
-│   ├── test-build_grm.R
-│   ├── test-build_household.R
-│   ├── test-int_transform.R
-│   ├── test-herit_vc.R
-│   ├── test-herit_batch.R
-│   ├── test-herit_ace.R
-│   └── test-herit_bivar.R
-├── vignettes/
-│   ├── getting-started.Rmd
-│   └── twin-cohorts.Rmd       # MZ relatedness, household effects, bivariate correlation
-├── data-raw/
-│   └── prepare_data.R
-├── DESCRIPTION
-├── NAMESPACE
-└── NEWS.md</code></pre>
-<hr>
-</div>
-<div class="section level2">
 <h2 id="rocket-getting-started">🚀 Getting Started<a class="anchor" aria-label="anchor" href="#rocket-getting-started"></a>
 </h2>
 <div class="section level3">
-<h3 id="prerequisites">Prerequisites<a class="anchor" aria-label="anchor" href="#prerequisites"></a>
-</h3>
-<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"kinship2"</span>, <span class="st">"rlang"</span>, <span class="st">"cli"</span><span class="op">)</span><span class="op">)</span></span>
-<span></span>
-<span><span class="co"># For plotting:</span></span>
-<span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"ggplot2"</span><span class="op">)</span></span></code></pre></div>
-</div>
-<div class="section level3">
 <h3 id="installation">Installation<a class="anchor" aria-label="anchor" href="#installation"></a>
 </h3>
-<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
-<code class="sourceCode R"><span><span class="co"># From GitHub (recommended while pre-CRAN)</span></span>
-<span><span class="fu">remotes</span><span class="fu">::</span><span class="fu">install_github</span><span class="op">(</span><span class="st">"circadia-bio/R-itable"</span><span class="op">)</span></span></code></pre></div>
+<p>Install from <a href="https://circadia-bio.r-universe.dev" class="external-link">r-universe</a> (recommended — pre-built binaries):</p>
+<div class="sourceCode" id="cb1"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span></span>
+<span>  <span class="st">"Ritable"</span>,</span>
+<span>  repos <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"https://circadia-bio.r-universe.dev"</span>, <span class="st">"https://cloud.r-project.org"</span><span class="op">)</span></span>
+<span><span class="op">)</span></span></code></pre></div>
+<p>Or install the development version from GitHub:</p>
+<div class="sourceCode" id="cb2"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/utils/install.packages.html" class="external-link">install.packages</a></span><span class="op">(</span><span class="st">"pak"</span><span class="op">)</span></span>
+<span><span class="fu">pak</span><span class="fu">::</span><span class="fu"><a href="https://pak.r-lib.org/reference/pak.html" class="external-link">pak</a></span><span class="op">(</span><span class="st">"circadia-bio/R-itable"</span><span class="op">)</span></span></code></pre></div>
 </div>
 <div class="section level3">
 <h3 id="basic-usage">Basic usage<a class="anchor" aria-label="anchor" href="#basic-usage"></a>
 </h3>
-<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb3"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="kw"><a href="https://rdrr.io/r/base/library.html" class="external-link">library</a></span><span class="op">(</span><span class="va"><a href="https://r-itable.circadia-lab.uk">Ritable</a></span><span class="op">)</span></span>
 <span></span>
 <span><span class="co"># 1. Build GRM from pedigree</span></span>
@@ -272,7 +236,7 @@
 <div class="section level3">
 <h3 id="twin-cohorts-mz-relatedness-household-effects-bivariate-correlations">Twin cohorts: MZ relatedness, household effects, bivariate correlations<a class="anchor" aria-label="anchor" href="#twin-cohorts-mz-relatedness-household-effects-bivariate-correlations"></a>
 </h3>
-<div class="sourceCode" id="cb5"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb4"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># GRM with MZ-twin relatedness override (mztwin_col groups MZ pairs/triplets)</span></span>
 <span><span class="va">A</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_grm.html">build_grm</a></span><span class="op">(</span><span class="va">twin_pedigree</span>, study_ids <span class="op">=</span> <span class="va">twin_data</span><span class="op">$</span><span class="va">IID</span>, mz_col <span class="op">=</span> <span class="st">"mztwin"</span><span class="op">)</span></span>
 <span><span class="va">C</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/build_household.html">build_household</a></span><span class="op">(</span><span class="va">twin_pedigree</span><span class="op">$</span><span class="va">hhid</span>, <span class="va">twin_pedigree</span><span class="op">$</span><span class="va">id</span><span class="op">)</span></span>
@@ -302,31 +266,97 @@
 </div>
 </div>
 <div class="section level2">
+<h2 id="card_index_dividers-project-structure">🗂️ Project Structure<a class="anchor" aria-label="anchor" href="#card_index_dividers-project-structure"></a>
+</h2>
+<pre><code>R-itable/
+├── R/
+│   ├── Ritable-package.R      # package-level docs and colour palette
+│   ├── build_grm.R            # build additive GRM from pedigree (incl. MZ twins)
+│   ├── build_household.R      # build household/shared-environment matrix
+│   ├── int_transform.R        # rank-based inverse-normal transform
+│   ├── herit_vc.R             # single-trait VC estimator
+│   ├── herit_batch.R          # batch wrapper
+│   ├── herit_ace.R            # A vs C identifiability (sporadic/AE/CE/ACE)
+│   ├── herit_bivar.R          # bivariate genetic/environmental correlation
+│   ├── vc_utils.R             # internal general-ML helpers (ACE, bivariate)
+│   └── plot_forest.R          # ggplot2 forest plot
+├── man/figures/
+│   └── logo.svg
+├── tests/testthat/
+│   ├── helper-fixtures.R      # shared synthetic pedigree/twin/data fixtures
+│   ├── test-build_grm.R
+│   ├── test-build_household.R
+│   ├── test-int_transform.R
+│   ├── test-herit_vc.R
+│   ├── test-herit_batch.R
+│   ├── test-herit_ace.R
+│   └── test-herit_bivar.R
+├── vignettes/
+│   ├── getting-started.Rmd
+│   └── twin-cohorts.Rmd       # MZ relatedness, household effects, bivariate correlation
+├── data-raw/
+│   └── prepare_data.R
+├── DESCRIPTION
+├── NEWS.md
+└── R-itable.Rproj</code></pre>
+<hr>
+</div>
+<div class="section level2">
 <h2 id="package-dependencies">📦 Dependencies<a class="anchor" aria-label="anchor" href="#package-dependencies"></a>
 </h2>
 <table class="table">
+<colgroup>
+<col width="33%">
+<col width="33%">
+<col width="33%">
+</colgroup>
 <thead><tr>
 <th>Package</th>
-<th>Role</th>
+<th>Type</th>
+<th>Purpose</th>
 </tr></thead>
 <tbody>
 <tr>
-<td><code>kinship2</code></td>
+<td>kinship2</td>
+<td>Imports</td>
 <td>Pedigree object and kinship matrix</td>
 </tr>
 <tr>
-<td><code>rlang</code></td>
-<td>Error/warning handling, tidy eval</td>
+<td>rlang</td>
+<td>Imports</td>
+<td>Error/warning handling</td>
 </tr>
 <tr>
-<td><code>cli</code></td>
+<td>cli</td>
+<td>Imports</td>
 <td>Progress bars and formatted messages</td>
 </tr>
 <tr>
+<td>stats, utils</td>
+<td>Imports</td>
+<td>Base statistical/utility functions</td>
+</tr>
+<tr>
+<td>ggplot2</td>
+<td>Suggests</td>
 <td>
-<code>ggplot2</code> <em>(Suggests)</em>
+<code><a href="reference/plot_forest.html">plot_forest()</a></code> — checked at runtime, not required for non-plotting functions</td>
+</tr>
+<tr>
+<td>scales</td>
+<td>Suggests</td>
+<td>Axis formatting in <code><a href="reference/plot_forest.html">plot_forest()</a></code>
 </td>
-<td><code><a href="reference/plot_forest.html">plot_forest()</a></code></td>
+</tr>
+<tr>
+<td>testthat, covr</td>
+<td>Suggests</td>
+<td>Test suite and coverage</td>
+</tr>
+<tr>
+<td>knitr, rmarkdown, pkgdown</td>
+<td>Suggests</td>
+<td>Vignettes and documentation site</td>
 </tr>
 </tbody>
 </table>
@@ -337,9 +367,9 @@
 </h2>
 <table class="table">
 <colgroup>
-<col width="24%">
-<col width="24%">
-<col width="52%">
+<col width="33%">
+<col width="33%">
+<col width="33%">
 </colgroup>
 <thead><tr>
 <th>Role</th>
@@ -348,17 +378,30 @@
 </tr></thead>
 <tbody>
 <tr>
-<td>Author &amp; maintainer</td>
+<td>Author, maintainer</td>
 <td>Lucas França</td>
-<td>Northumbria University / Circadia Lab</td>
+<td>Northumbria University, Circadia Lab</td>
 </tr>
 <tr>
 <td>Author</td>
 <td>Mario Leocadio-Miguel</td>
-<td>Northumbria University / Circadia Lab</td>
+<td>Northumbria University, Circadia Lab</td>
 </tr>
 </tbody>
 </table>
+<hr>
+</div>
+<div class="section level2">
+<h2 id="page_facing_up-citation">📄 Citation<a class="anchor" aria-label="anchor" href="#page_facing_up-citation"></a>
+</h2>
+<p>If you use R-itable in your research, please cite it:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode bibtex"><code class="sourceCode bibtex"><span id="cb6-1"><a href="#cb6-1" tabindex="-1"></a><span class="co">@software{franca_ritable_2026,</span></span>
+<span id="cb6-2"><a href="#cb6-2" tabindex="-1"></a><span class="co">  author  = {França, Lucas and Leocadio-Miguel, Mario},</span></span>
+<span id="cb6-3"><a href="#cb6-3" tabindex="-1"></a><span class="co">  title   = {{R-itable}: Pedigree-Based Heritability Estimation for Family Cohort Studies},</span></span>
+<span id="cb6-4"><a href="#cb6-4" tabindex="-1"></a><span class="co">  year    = {2026},</span></span>
+<span id="cb6-5"><a href="#cb6-5" tabindex="-1"></a><span class="co">  version = {0.2.1},</span></span>
+<span id="cb6-6"><a href="#cb6-6" tabindex="-1"></a><span class="co">  url     = {https://github.com/circadia-bio/R-itable}</span></span>
+<span id="cb6-7"><a href="#cb6-7" tabindex="-1"></a><span class="co">}</span></span></code></pre></div>
 <hr>
 </div>
 <div class="section level2">

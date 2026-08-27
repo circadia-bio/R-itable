@@ -3,14 +3,15 @@
 **Profile-likelihood heritability estimation for family cohort studies —
 no SOLAR required.**
 
-[![R](https://img.shields.io/badge/R-%3E%3D4.1-276DC3)](https://cran.r-project.org)
+[![r-universe](https://circadia-bio.r-universe.dev/badges/Ritable)](https://circadia-bio.r-universe.dev/Ritable)
 [![License:
 MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://r-itable.circadia-lab.uk/LICENSE.md)
+[![R](https://img.shields.io/badge/R-%3E%3D4.1-276DC3)](https://www.r-project.org/)
 [![R CMD
 CHECK](https://github.com/circadia-bio/R-itable/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/circadia-bio/R-itable/actions/workflows/R-CMD-check.yaml)
-[![Lifecycle:
-experimental](https://img.shields.io/badge/lifecycle-experimental-orange.svg)](https://lifecycle.r-lib.org/articles/stages.html)
+[![Coverage](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/circadia-bio/R-itable/gh-pages/badges/coverage.json)](https://github.com/circadia-bio/R-itable/actions/workflows/pkgdown.yaml)
 [![Status](https://img.shields.io/badge/status-early%20development-orange)](https://github.com/circadia-bio/R-itable)
+[![pkgdown](https://img.shields.io/badge/docs-r--itable.circadia--lab.uk-F0A500)](https://r-itable.circadia-lab.uk)
 
 ------------------------------------------------------------------------
 
@@ -77,58 +78,27 @@ get results you can trace back to first principles.
 
 ------------------------------------------------------------------------
 
-## 🗂️ Project Structure
-
-    R-itable/
-    ├── R/
-    │   ├── Ritable-package.R      # package-level docs and colour palette
-    │   ├── build_grm.R            # build additive GRM from pedigree (incl. MZ twins)
-    │   ├── build_household.R      # build household/shared-environment matrix
-    │   ├── int_transform.R        # rank-based inverse-normal transform
-    │   ├── herit_vc.R             # single-trait VC estimator
-    │   ├── herit_batch.R          # batch wrapper
-    │   ├── herit_ace.R            # A vs C identifiability (sporadic/AE/CE/ACE)
-    │   ├── herit_bivar.R          # bivariate genetic/environmental correlation
-    │   ├── vc_utils.R             # internal general-ML helpers (ACE, bivariate)
-    │   └── plot_forest.R          # ggplot2 forest plot
-    ├── tests/testthat/
-    │   ├── helper-fixtures.R      # shared synthetic pedigree/twin/data fixtures
-    │   ├── test-build_grm.R
-    │   ├── test-build_household.R
-    │   ├── test-int_transform.R
-    │   ├── test-herit_vc.R
-    │   ├── test-herit_batch.R
-    │   ├── test-herit_ace.R
-    │   └── test-herit_bivar.R
-    ├── vignettes/
-    │   ├── getting-started.Rmd
-    │   └── twin-cohorts.Rmd       # MZ relatedness, household effects, bivariate correlation
-    ├── data-raw/
-    │   └── prepare_data.R
-    ├── DESCRIPTION
-    ├── NAMESPACE
-    └── NEWS.md
-
-------------------------------------------------------------------------
-
 ## 🚀 Getting Started
-
-### Prerequisites
-
-``` r
-
-install.packages(c("kinship2", "rlang", "cli"))
-
-# For plotting:
-install.packages("ggplot2")
-```
 
 ### Installation
 
+Install from [r-universe](https://circadia-bio.r-universe.dev)
+(recommended — pre-built binaries):
+
 ``` r
 
-# From GitHub (recommended while pre-CRAN)
-remotes::install_github("circadia-bio/R-itable")
+install.packages(
+  "Ritable",
+  repos = c("https://circadia-bio.r-universe.dev", "https://cloud.r-project.org")
+)
+```
+
+Or install the development version from GitHub:
+
+``` r
+
+install.packages("pak")
+pak::pak("circadia-bio/R-itable")
 ```
 
 ### Basic usage
@@ -199,14 +169,54 @@ for the workflow above in more detail.
 
 ------------------------------------------------------------------------
 
+## 🗂️ Project Structure
+
+    R-itable/
+    ├── R/
+    │   ├── Ritable-package.R      # package-level docs and colour palette
+    │   ├── build_grm.R            # build additive GRM from pedigree (incl. MZ twins)
+    │   ├── build_household.R      # build household/shared-environment matrix
+    │   ├── int_transform.R        # rank-based inverse-normal transform
+    │   ├── herit_vc.R             # single-trait VC estimator
+    │   ├── herit_batch.R          # batch wrapper
+    │   ├── herit_ace.R            # A vs C identifiability (sporadic/AE/CE/ACE)
+    │   ├── herit_bivar.R          # bivariate genetic/environmental correlation
+    │   ├── vc_utils.R             # internal general-ML helpers (ACE, bivariate)
+    │   └── plot_forest.R          # ggplot2 forest plot
+    ├── man/figures/
+    │   └── logo.svg
+    ├── tests/testthat/
+    │   ├── helper-fixtures.R      # shared synthetic pedigree/twin/data fixtures
+    │   ├── test-build_grm.R
+    │   ├── test-build_household.R
+    │   ├── test-int_transform.R
+    │   ├── test-herit_vc.R
+    │   ├── test-herit_batch.R
+    │   ├── test-herit_ace.R
+    │   └── test-herit_bivar.R
+    ├── vignettes/
+    │   ├── getting-started.Rmd
+    │   └── twin-cohorts.Rmd       # MZ relatedness, household effects, bivariate correlation
+    ├── data-raw/
+    │   └── prepare_data.R
+    ├── DESCRIPTION
+    ├── NEWS.md
+    └── R-itable.Rproj
+
+------------------------------------------------------------------------
+
 ## 📦 Dependencies
 
-| Package | Role |
-|----|----|
-| `kinship2` | Pedigree object and kinship matrix |
-| `rlang` | Error/warning handling, tidy eval |
-| `cli` | Progress bars and formatted messages |
-| `ggplot2` *(Suggests)* | [`plot_forest()`](https://r-itable.circadia-lab.uk/reference/plot_forest.md) |
+| Package | Type | Purpose |
+|----|----|----|
+| kinship2 | Imports | Pedigree object and kinship matrix |
+| rlang | Imports | Error/warning handling |
+| cli | Imports | Progress bars and formatted messages |
+| stats, utils | Imports | Base statistical/utility functions |
+| ggplot2 | Suggests | [`plot_forest()`](https://r-itable.circadia-lab.uk/reference/plot_forest.md) — checked at runtime, not required for non-plotting functions |
+| scales | Suggests | Axis formatting in [`plot_forest()`](https://r-itable.circadia-lab.uk/reference/plot_forest.md) |
+| testthat, covr | Suggests | Test suite and coverage |
+| knitr, rmarkdown, pkgdown | Suggests | Vignettes and documentation site |
 
 ------------------------------------------------------------------------
 
@@ -214,8 +224,24 @@ for the workflow above in more detail.
 
 | Role | Name | Affiliation |
 |----|----|----|
-| Author & maintainer | Lucas França | Northumbria University / Circadia Lab |
-| Author | Mario Leocadio-Miguel | Northumbria University / Circadia Lab |
+| Author, maintainer | Lucas França | Northumbria University, Circadia Lab |
+| Author | Mario Leocadio-Miguel | Northumbria University, Circadia Lab |
+
+------------------------------------------------------------------------
+
+## 📄 Citation
+
+If you use R-itable in your research, please cite it:
+
+``` bibtex
+@software{franca_ritable_2026,
+  author  = {França, Lucas and Leocadio-Miguel, Mario},
+  title   = {{R-itable}: Pedigree-Based Heritability Estimation for Family Cohort Studies},
+  year    = {2026},
+  version = {0.2.1},
+  url     = {https://github.com/circadia-bio/R-itable}
+}
+```
 
 ------------------------------------------------------------------------
 
