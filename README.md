@@ -3,6 +3,7 @@
 **Profile-likelihood heritability estimation for family cohort studies — no SOLAR required.**
 
 [![r-universe](https://circadia-bio.r-universe.dev/badges/Ritable)](https://circadia-bio.r-universe.dev/Ritable)
+[![DOI](https://img.shields.io/badge/DOI-10.5281%2Fzenodo.22068455-blue)](https://doi.org/10.5281/zenodo.22068455)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](./LICENSE.md)
 [![R](https://img.shields.io/badge/R-%3E%3D4.1-276DC3)](https://www.r-project.org/)
 [![R CMD CHECK](https://github.com/circadia-bio/R-itable/actions/workflows/R-CMD-check.yaml/badge.svg)](https://github.com/circadia-bio/R-itable/actions/workflows/R-CMD-check.yaml)

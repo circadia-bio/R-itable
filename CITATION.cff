@@ -15,6 +15,13 @@ authors:
 license: MIT
 repository-code: "https://github.com/circadia-bio/R-itable"
 url: "https://r-itable.circadia-lab.uk"
+identifiers:
+  - type: doi
+    value: "10.5281/zenodo.22068455"
+    description: "Concept DOI: represents all versions, always resolves to latest."
+  - type: doi
+    value: "10.5281/zenodo.22119505"
+    description: "DOI for version 0.2.1"
 keywords:
   - heritability
   - pedigree analysis
