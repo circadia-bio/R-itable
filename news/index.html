@@ -121,10 +121,97 @@
 <div class="row">
   <main id="main" class="col-md-9"><div class="page-header">
       <img src="../logo.svg" class="logo" alt=""><h1>Changelog</h1>
-      <small>Source: <a href="https://github.com/circadia-bio/R-itable/blob/v0.2.1/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
+      <small>Source: <a href="https://github.com/circadia-bio/R-itable/blob/main/NEWS.md" class="external-link"><code>NEWS.md</code></a></small>
     </div>
 
-  </main></div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.2.1" id="ritable-021-2026-08">Ritable 0.2.1 (2026-08)<a class="anchor" aria-label="anchor" href="#ritable-021-2026-08"></a></h2>
+<div class="section level3">
+<h3 id="sparkles-new-features-0-2-1">✨ New features<a class="anchor" aria-label="anchor" href="#sparkles-new-features-0-2-1"></a></h3>
+<ul><li>
+<p><code><a href="../reference/herit_ace.html">herit_ace()</a></code> gains <code>covs</code>, <code>screen</code>, and <code>prob_level</code> arguments: covariate support (previously absent) plus automatic SOLAR-style covariate screening. Matches <code>polygenic -screen</code>’s actual algorithm, confirmed by reading SOLAR’s source (<code>lib/solar.tcl</code>, <code>proc polygenic</code>) rather than assumed: a <strong>single pass</strong>, not iterative backward elimination – fit the AE model with all candidate covariates, then LRT-test each one individually against that full model (chi-squared(1), not boundary- corrected), and drop any with p &gt;= <code>prob_level</code> (default <code>0.10</code>, matching SOLAR’s own default <code>probability_level</code>). The same final covariate set is then used for all four nested models (sporadic/AE/CE/ACE), which keeps the nested LRTs valid (a valid LRT needs the compared models to share the same mean structure) – SOLAR’s own script can in principle screen separately per model context, but a single shared screening pass is the more defensible choice here. <code>covs = NULL</code> (the default) reproduces prior behaviour exactly.</p>
+<p>Prompted by a manuscript decision to report R-itable’s own analysis rather than SOLAR’s, which required matching SOLAR’s actual covariate methodology (age, sex, age<em>sex, age^2, age^2</em>sex) rather than hard-coding no covariates. Empirically, on the Gomes et al. dataset, all 5 candidate covariates screen out for both anxiety and depression (p in 0.30-0.74) – confirming <code>solar_full_analysis.tcl</code>’s own comment that “age, sex, and their interactions were not significant for any trait tested” applied to these two traits as well, and confirming the previous no-covariate default already matched SOLAR’s actual final model for this dataset.</p>
+</li>
+</ul></div>
+<div class="section level3">
+<h3 id="test_tube-tests-0-2-1">🧪 Tests<a class="anchor" aria-label="anchor" href="#test_tube-tests-0-2-1"></a></h3>
+<ul><li>
+<code>test-herit_ace.R</code>: covariate screening keeps a strongly predictive covariate (robust across random seeds, unlike asserting a <em>specific</em> noise draw is non-significant, which is inherently flaky at any p-value threshold), <code>screen = FALSE</code> bypass, zero-variance covariate handling, and backward-compatible output shape when <code>covs = NULL</code>.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.2.0" id="ritable-020-2026-08">Ritable 0.2.0 (2026-08)<a class="anchor" aria-label="anchor" href="#ritable-020-2026-08"></a></h2>
+<div class="section level3">
+<h3 id="sparkles-new-features-0-2-0">✨ New features<a class="anchor" aria-label="anchor" href="#sparkles-new-features-0-2-0"></a></h3>
+<ul><li><p><code><a href="../reference/build_grm.html">build_grm()</a></code> gains an <code>mz_col</code> argument for twin cohorts: pairs (or larger groups, e.g. triplets) sharing a monozygotic-twin label get the correct MZ kinship (A = 1.0) instead of the ordinary full-sibling default (A = 0.5), via <code>kinship2::pedigree(relation = ...)</code>.</p></li>
+<li><p><code><a href="../reference/build_household.html">build_household()</a></code> – new. Builds the block-diagonal household/shared- environment indicator matrix from an <code>hhid</code> grouping vector, for use with <code><a href="../reference/herit_ace.html">herit_ace()</a></code>.</p></li>
+<li><p><code><a href="../reference/herit_ace.html">herit_ace()</a></code> – new. Fits sporadic / AE / CE / full-ACE nested variance-component models for a single trait and returns the two likelihood-ratio tests needed to judge A/C identifiability: CE vs sporadic, and ACE vs AE. Uses direct numerical ML over the full covariance matrix (Cholesky-based GLS, multi-start Nelder-Mead), since A and a household indicator do not in general share eigenvectors the way <code><a href="../reference/herit_vc.html">herit_vc()</a></code>’s single-component model does.</p></li>
+<li>
+<p><code><a href="../reference/herit_bivar.html">herit_bivar()</a></code> / <code><a href="../reference/herit_bivar_batch.html">herit_bivar_batch()</a></code> – new. Bivariate AE model estimating the genetic correlation (rhoG), non-shared environmental correlation (rhoE), and derived phenotypic correlation (rhoP) between two traits, with LRTs for rhoG = 0, rhoE = 0, and the joint rhoG = rhoE = 0. <code><a href="../reference/herit_bivar_batch.html">herit_bivar_batch()</a></code> iterates over a set of trait pairs and applies Benjamini-Hochberg FDR correction separately within each of the three p-value families, matching the <code>parse_and_fdr.py</code> SOLAR post-processing convention. Likelihood evaluations are reduced from an O(n^3) 2n x 2n Cholesky to n independent 2x2 blocks by diagonalising the GRM once (both covariance blocks are linear combinations of A and I, so they share A’s eigenvectors) – this is what makes batches over ~30 pairs tractable (~0.4s/pair vs ~64s/pair for the naive implementation).</p>
+<p><strong>Validated against SOLAR Eclipse</strong> on twin dataset (n=161, 31 trait pairs), combining every fix in this release (correct per-trait inverse-normal transform selection, SOLAR-exact <code>inormal</code> tie handling, SOLAR’s actual <code>[-0.9,0.9]</code> rho bounds, and unbalanced-trait handling): <strong>28 of 31 pairs match SOLAR to 4 decimal places exactly</strong> on both rhoG and rhoE, and all 31 pairs agree with SOLAR on nominal significance for both. The bivariate model itself was also independently confirmed algebraically identical to SOLAR’s own documented omega formula for multivariate polygenic models (SOLAR Manual Chapter 9).</p>
+</li>
+</ul></div>
+<div class="section level3">
+<h3 id="bug-bug-fixes-0-2-0">🐛 Bug fixes<a class="anchor" aria-label="anchor" href="#bug-bug-fixes-0-2-0"></a></h3>
+<ul><li><p><strong><code><a href="../reference/build_grm.html">build_grm()</a></code></strong>: cohorts with character founder IDs (e.g. synthetic twin-pair parent labels like <code>"FA12"</code>) would error, because the previous <code>NA -&gt; 0</code> coercion for missing parents assumed numeric IDs. Missing parents are now coded <code>NA</code> uniformly, which <code><a href="https://rdrr.io/pkg/kinship2/man/pedigree.html" class="external-link">kinship2::pedigree()</a></code> accepts regardless of ID type – verified bit-identical to the old behaviour on numeric-ID pedigrees, so this is a pure bug fix, not a behaviour change for existing callers.</p></li>
+<li>
+<p><strong><code><a href="../reference/int_transform.html">int_transform()</a></code></strong>: the default formula didn’t actually match SOLAR Eclipse’s <code>inormal</code>, despite the docstring’s claim that it did. Fixed in two passes once the claim was actually checked against SOLAR’s source (<code>lib/solar.tcl</code>, <code>proc inormal</code>, cloned from <code>github.com/kochunov/solar-eclipse</code>) rather than assumed:</p>
+<ol style="list-style-type: decimal"><li>Switched the untied-case formula from Blom (<code>qnorm((r-0.5)/n)</code>) to Van der Waerden (<code>qnorm(r/(n+1))</code>), which is what SOLAR actually uses.</li>
+<li>That alone was still subtly wrong under ties. SOLAR’s real tie handling: for a block of tied values spanning sorted rank positions <code>i</code> to <code>j</code>, average <code>qnorm(i/(n+1)), ..., qnorm(j/(n+1))</code> – i.e. average the <em>z-scores</em> of the individual rank positions, not the z-score of the <em>averaged</em> rank. These differ whenever a nonlinear <code>qnorm</code> is applied to a tied block that isn’t symmetric around the middle of the sample (e.g. a large block of tied zeros in a zero-inflated phenotype). Now replicated exactly.</li>
+</ol><p><code>"blom"</code> is kept as an explicit <code>method</code> option for continuity with R-itable &lt;= 0.2.0. <strong>This changes the default numeric output of <code><a href="../reference/int_transform.html">int_transform()</a></code>, <code><a href="../reference/herit_vc.html">herit_vc()</a></code>, <code><a href="../reference/herit_batch.html">herit_batch()</a></code>, <code><a href="../reference/herit_ace.html">herit_ace()</a></code>, and <code><a href="../reference/herit_bivar.html">herit_bivar()</a></code></strong> for any call using default settings, particularly for heavily-tied traits. Pass <code>method = "blom"</code> to reproduce pre-0.2.0 output exactly. Confirmed to fully resolve the <code>DR_ATV_m</code>/<code>DR_ATM_m</code>/ <code>DR_ATL_m</code> discrepancy against SOLAR described in an earlier draft of this changelog as an “inherently hard, flat likelihood surface” – that diagnosis was wrong; it was this tie-handling bug.</p>
+</li>
+<li><p><strong><code><a href="../reference/herit_bivar.html">herit_bivar()</a></code></strong>: individuals missing exactly one of the two traits were dropped via a complete-case restriction. They’re now retained and contribute their observed trait’s marginal likelihood, matching SOLAR Eclipse’s default <code>UnbalancedTraits</code> behaviour (only individuals missing <em>both</em> traits, or the ID, are excluded). The returned list gains <code>n</code> (all contributing individuals) and <code>n_complete</code> (individuals with both traits observed); <code>n</code> is now the primary sample-size figure, matching SOLAR’s convention. When neither trait has missing data (the common case) this is a no-op – the fast eigenbasis path is used exactly as before; the slower general Cholesky path only engages when needed.</p></li>
+<li>
+<p><strong><code><a href="../reference/herit_bivar.html">herit_bivar()</a></code></strong>: rhoG/rhoE were unbounded (mathematical <code>[-1, 1]</code>) instead of SOLAR’s actual default <code>[-0.9, 0.9]</code> – confirmed by reading SOLAR’s source (<code>lib/solar.tcl</code>, <code>proc polymod</code>: <code>set rholow -0.9; set rhoup 0.9</code>), not assumed. Also, both traits are now standardised to unit variance before fitting: h2 and the correlations are scale-invariant so this changes nothing about the true ML answer, but it fixes a real numerical failure mode for raw (non-INT-transformed) traits with an extreme variance, where the unstandardised covariance matrix loses all floating-point precision during fitting (observed as correlations pinning to a boundary, or the optimiser failing to move from its starting point at all).</p>
+<p>Checking this against SOLAR’s own source explains why SOLAR never hits the failure this package did: its <code>sd</code>/<code>mean</code> parameters are “initialized… in c++” directly from the raw data rather than numerically searched, so SOLAR is architecturally immune to extreme-scale numerical failure regardless of what the values represent. Reproducing that robustness here (the standardisation fix above) does make the fit numerically well-behaved – but the resulting maximum-likelihood estimate for this phenotype (rhoG in the 0.7-0.9 range) is now <em>more</em> different from SOLAR’s reported values (0.04-0.13) than the original broken fit was, not less.</p>
+</li>
+</ul></div>
+<div class="section level3">
+<h3 id="test_tube-tests-0-2-0">🧪 Tests<a class="anchor" aria-label="anchor" href="#test_tube-tests-0-2-0"></a></h3>
+<ul><li>New <code>test-build_household.R</code>, <code>test-herit_ace.R</code>, <code>test-herit_bivar.R</code>, and a <code>make_twin_data()</code> fixture (MZ + DZ pairs with simulated shared genetic and household components) in <code>helper-fixtures.R</code>.</li>
+<li>
+<code>test-build_grm.R</code>: new MZ-twin cases, including a dedicated same-mother triplet pedigree (kinship2 requires MZ-marked individuals to share both sex and mother, which a naive fixture reuse doesn’t guarantee).</li>
+<li>
+<code>test-herit_bivar.R</code>: unbalanced-trait (single-missing-trait) cases, and <code>n</code> vs <code>n_complete</code> behaviour.</li>
+<li>
+<code>test-int_transform.R</code>: <code>"vdw"</code> matches Van der Waerden exactly when untied; a dedicated tied-block case confirming z-scores are averaged (not ranks); <code>"blom"</code> matches the conventional rank-average formula.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="wrench-other-changes-0-2-0">🔧 Other changes<a class="anchor" aria-label="anchor" href="#wrench-other-changes-0-2-0"></a></h3>
+<ul><li>
+<code>.Rbuildignore</code>: <code>.zenodo.json</code> and <code>CITATION.cff</code> excluded from <code>R CMD check</code> (both are legitimate top-level GitHub/Zenodo files, not standard R package structure).</li>
+</ul></div>
+<div class="section level3">
+<h3 id="books-documentation-0-2-0">📚 Documentation<a class="anchor" aria-label="anchor" href="#books-documentation-0-2-0"></a></h3>
+<ul><li>
+<code>_pkgdown.yml</code>: added <code>build_household</code>, <code>herit_ace</code>, <code>herit_bivar</code>, and <code>herit_bivar_batch</code> to the reference index (the pkgdown build was failing without this); registered the new <code>twin-cohorts</code> vignette.</li>
+<li>README: covers the new twin/ACE/bivariate workflow, updated feature list and project structure tree; the top-of-README validation banner now reflects reality (<code><a href="../reference/herit_ace.html">herit_ace()</a></code>/<code><a href="../reference/herit_bivar.html">herit_bivar()</a></code>/<code><a href="../reference/herit_bivar_batch.html">herit_bivar_batch()</a></code> validated against real SOLAR output; <code><a href="../reference/herit_vc.html">herit_vc()</a></code>/<code><a href="../reference/herit_batch.html">herit_batch()</a></code> not yet formally compared) instead of a blanket “not yet validated” that predated this release’s SOLAR-parity work.</li>
+<li>New <code><a href="../articles/twin-cohorts.html">vignette("twin-cohorts")</a></code>: end-to-end walkthrough of the twin-cohort workflow this release adds (MZ relatedness, <code><a href="../reference/herit_ace.html">herit_ace()</a></code>’s A vs C identifiability check, <code><a href="../reference/herit_bivar.html">herit_bivar()</a></code>/<code><a href="../reference/herit_bivar_batch.html">herit_bivar_batch()</a></code>) on a self-contained simulated dataset – <code>getting-started</code> covers only the general-pedigree <code><a href="../reference/herit_vc.html">herit_vc()</a></code>/<code><a href="../reference/herit_batch.html">herit_batch()</a></code> workflow from 0.1.0 and never mentioned any of this release’s additions.</li>
+</ul></div>
+</div>
+    <div class="section level2">
+<h2 class="pkg-version" data-toc-text="0.1.0" id="ritable-010-2026-05">Ritable 0.1.0 (2026-05)<a class="anchor" aria-label="anchor" href="#ritable-010-2026-05"></a></h2>
+<div class="section level3">
+<h3 id="seedling-initial-release-0-1-0">🌱 Initial release<a class="anchor" aria-label="anchor" href="#seedling-initial-release-0-1-0"></a></h3>
+<ul><li><p><code><a href="../reference/build_grm.html">build_grm()</a></code> — build an additive genetic relationship matrix from a pedigree data frame via <code><a href="https://rdrr.io/pkg/kinship2/man/kinship.html" class="external-link">kinship2::kinship()</a></code>. Supports custom column names, graceful handling of missing parents, and informative errors for common mistakes.</p></li>
+<li><p><code><a href="../reference/herit_vc.html">herit_vc()</a></code> — profile-likelihood variance-components heritability estimator for a single quantitative trait. Features: inverse-normal transformation, one-sided LRT with chi-squared(1) boundary correction, profile-likelihood 95% CIs, and zero-variance covariate detection.</p></li>
+<li><p><code><a href="../reference/herit_batch.html">herit_batch()</a></code> — iterate <code><a href="../reference/herit_vc.html">herit_vc()</a></code> over many traits x covariate model combinations; returns a tidy data frame. Includes a cli progress bar.</p></li>
+<li><p><code><a href="../reference/int_transform.html">int_transform()</a></code> — exported rank-based inverse-normal transformation (Blom-style).</p></li>
+<li><p><code><a href="../reference/plot_forest.html">plot_forest()</a></code> — ggplot2 forest plot method for <code><a href="../reference/herit_batch.html">herit_batch()</a></code> output, with optional model filtering and significance shading.</p></li>
+</ul></div>
+<div class="section level3">
+<h3 id="sparkles-new-features-0-1-0">✨ New features<a class="anchor" aria-label="anchor" href="#sparkles-new-features-0-1-0"></a></h3>
+<ul><li>
+<code><a href="../reference/herit_vc.html">herit_vc()</a></code> and <code><a href="../reference/herit_batch.html">herit_batch()</a></code> now return <code>var_covariates</code>: the proportion of phenotypic variance explained by fixed-effect covariates (R² on the INT-transformed phenotype). This corresponds to the “variance explained” column reported in Leocadio-Miguel et al. (2025, <em>J Sleep Res</em>). Returns <code>NA</code> for unadjusted models.</li>
+</ul></div>
+<div class="section level3">
+<h3 id="books-documentation-0-1-0">📚 Documentation<a class="anchor" aria-label="anchor" href="#books-documentation-0-1-0"></a></h3>
+<ul><li>
+<code>sigma2_a</code> and <code>sigma2_e</code> are now documented using SOLAR’s sigma²_g / sigma²_e notation for clarity.</li>
+</ul></div>
+</div>
+  </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>
+    </nav></aside></div>
 
 
     <footer><div class="pkgdown-footer-left">

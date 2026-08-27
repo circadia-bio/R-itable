@@ -11,7 +11,7 @@
 ## Citation
 
 Source:
-[`DESCRIPTION`](https://github.com/circadia-bio/R-itable/blob/v0.2.1/DESCRIPTION)
+[`DESCRIPTION`](https://github.com/circadia-bio/R-itable/blob/main/DESCRIPTION)
 
 França L, Leocadio-Miguel M (2026). *Ritable: Pedigree-Based
 Heritability Estimation for Family Cohort Studies*. R package version
