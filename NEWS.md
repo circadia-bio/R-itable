@@ -1,4 +1,4 @@
-## R-itable 0.2.1  (2026-08)
+## Ritable 0.2.1  (2026-08)
 
 ### ✨ New features
 
@@ -37,7 +37,7 @@
   threshold), `screen = FALSE` bypass, zero-variance covariate handling,
   and backward-compatible output shape when `covs = NULL`.
 
-## R-itable 0.2.0  (2026-08)
+## Ritable 0.2.0  (2026-08)
 
 ### ✨ New features
 
@@ -188,7 +188,7 @@
   general-pedigree `herit_vc()`/`herit_batch()` workflow from 0.1.0 and
   never mentioned any of this release's additions.
 
-## R-itable 0.1.0  (2026-05)
+## Ritable 0.1.0  (2026-05)
 
 ### 🌱 Initial release
 
