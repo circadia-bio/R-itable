@@ -9,6 +9,9 @@ herit_ace(
   grm,
   household,
   data,
+  covs = NULL,
+  screen = TRUE,
+  prob_level = 0.1,
   id_col = "IID",
   transform = TRUE,
   min_n = 80L,
@@ -24,7 +27,22 @@ returned by \code{\link[=build_grm]{build_grm()}}.}
 \item{household}{Numeric matrix: household indicator matrix, as returned
 by \code{\link[=build_household]{build_household()}}. Must have the same row/column names as \code{grm}.}
 
-\item{data}{Data frame containing \code{id_col} and \code{trait}.}
+\item{data}{Data frame containing \code{id_col}, \code{trait}, and any \code{covs}.}
+
+\item{covs}{Optional character vector of covariate column names in \code{data}
+(e.g. \code{c("age", "sex", "age_sex", "age2", "age2_sex")} for SOLAR's
+standard age/sex/age\emph{sex/age^2/age^2}sex set -- construct interaction
+and polynomial terms as ordinary columns before calling, same
+convention as \code{\link[=herit_vc]{herit_vc()}}). Covariates are standardised internally.
+Default \code{NULL} (no covariates, matching prior behaviour exactly).}
+
+\item{screen}{Logical. If \code{covs} is given, apply SOLAR-style automatic
+covariate screening (see Details) rather than including all of \code{covs}
+unconditionally. Default \code{TRUE}. Ignored if \code{covs} is \code{NULL}.}
+
+\item{prob_level}{Screening significance threshold. Default \code{0.10},
+matching SOLAR Eclipse's own default (confirmed from source,
+\code{lib/solar.tcl} \verb{proc polygenic}: \verb{set probability_level 0.1}).}
 
 \item{id_col}{Name of the individual ID column in \code{data}. Default \code{"IID"}.}
 
@@ -43,7 +61,8 @@ A named list with elements:
 \item{\code{trait}}{Trait name.}
 \item{\code{n}}{Sample size after dropping missing values.}
 \item{\code{loglik_sporadic}, \code{loglik_ae}, \code{loglik_ce}, \code{loglik_ace}}{
-Log-likelihoods of the four nested models.}
+Log-likelihoods of the four nested models (all fit with the same
+final covariate set -- see Details).}
 \item{\code{h2_ae}}{Heritability under the AE model.}
 \item{\code{c2_ce}}{Common-environment proportion under the CE model.}
 \item{\code{h2_ace}, \code{c2_ace}}{Joint estimates under the full ACE model.}
@@ -55,6 +74,12 @@ statistic with \code{c2_ace} at or near the 0 boundary indicates A and C
 are not jointly identifiable in this sample -- report the simpler AE
 model (see package vignette / Leocadio-Miguel et al. companion
 analyses).}
+\item{\code{covs_tested}, \code{covs_kept}, \code{covs_dropped}}{Present only if
+\code{covs} was supplied and \code{screen = TRUE}: the full candidate list,
+the ones retained (p < \code{prob_level}), and the ones dropped.}
+\item{\code{covariate_lrt_p}}{Present only if \code{covs} was supplied and
+\code{screen = TRUE}: named numeric vector of each candidate covariate's
+individual LRT p-value against the full-covariate AE model.}
 }
 Returns \code{NULL} if \code{n < min_n}.
 }
@@ -79,9 +104,27 @@ in general share eigenvectors.
 \strong{Model:} \verb{Omega = sigma2_p * [h2*A + c2*C + (1 - h2 - c2)*I]}, jointly
 estimated for the ACE model via multi-start Nelder-Mead on a
 logit-reparametrised \verb{(h2, c2)} (guaranteeing \verb{h2, c2 >= 0} and
-\code{h2 + c2 < 1}); AE and CE are 1-D special cases.
+\code{h2 + c2 < 1}); AE and CE are 1-D special cases. Covariates (if any)
+enter the mean structure: \code{E[y] = X \%*\% beta}, with \code{X} including an
+intercept plus the (standardised) columns named in \code{covs}.
 
-\strong{LRTs:} one-sided chi-squared(1) boundary correction, as in
+\strong{Covariate screening} (when \code{covs} is given and \code{screen = TRUE}):
+matches SOLAR Eclipse's \code{polygenic -screen}, confirmed from source
+(\code{lib/solar.tcl} \verb{proc polygenic}) rather than assumed. SOLAR's
+algorithm is a \strong{single pass}, not iterative backward elimination: fit
+the AE model with \emph{all} candidate covariates, then for each covariate
+individually, fit the AE model with just that one covariate removed and
+compute a likelihood-ratio test against the full-covariate model
+(chi-squared(1), not boundary-corrected, since a covariate coefficient
+is not a boundary parameter). Any covariate with p >= \code{prob_level} is
+dropped; all remaining covariates are kept. This happens once, against
+the AE model specifically (not separately for CE/ACE) -- SOLAR's own
+script can in principle screen separately per model context, but using
+one shared covariate set for all four nested models here keeps the
+sporadic/AE/CE/ACE comparisons validly nested (a valid LRT requires the
+compared models to share the same mean structure).
+
+\strong{LRTs for h2/c2:} one-sided chi-squared(1) boundary correction, as in
 \code{\link[=herit_vc]{herit_vc()}}, since both null hypotheses (\code{c2 = 0}, or \code{h2 = 0}) sit on
 the boundary of the parameter space.
 }

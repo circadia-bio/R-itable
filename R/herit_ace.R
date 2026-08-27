@@ -21,7 +21,19 @@
 #'   returned by [build_grm()].
 #' @param household Numeric matrix: household indicator matrix, as returned
 #'   by [build_household()]. Must have the same row/column names as `grm`.
-#' @param data Data frame containing `id_col` and `trait`.
+#' @param data Data frame containing `id_col`, `trait`, and any `covs`.
+#' @param covs Optional character vector of covariate column names in `data`
+#'   (e.g. `c("age", "sex", "age_sex", "age2", "age2_sex")` for SOLAR's
+#'   standard age/sex/age*sex/age^2/age^2*sex set -- construct interaction
+#'   and polynomial terms as ordinary columns before calling, same
+#'   convention as [herit_vc()]). Covariates are standardised internally.
+#'   Default `NULL` (no covariates, matching prior behaviour exactly).
+#' @param screen Logical. If `covs` is given, apply SOLAR-style automatic
+#'   covariate screening (see Details) rather than including all of `covs`
+#'   unconditionally. Default `TRUE`. Ignored if `covs` is `NULL`.
+#' @param prob_level Screening significance threshold. Default `0.10`,
+#'   matching SOLAR Eclipse's own default (confirmed from source,
+#'   `lib/solar.tcl` `proc polygenic`: `set probability_level 0.1`).
 #' @param id_col Name of the individual ID column in `data`. Default `"IID"`.
 #' @param transform Logical. Apply [int_transform()] to `trait` before
 #'   fitting. Default `TRUE`, matching SOLAR Eclipse convention for skewed
@@ -35,7 +47,8 @@
 #'   \item{`trait`}{Trait name.}
 #'   \item{`n`}{Sample size after dropping missing values.}
 #'   \item{`loglik_sporadic`, `loglik_ae`, `loglik_ce`, `loglik_ace`}{
-#'     Log-likelihoods of the four nested models.}
+#'     Log-likelihoods of the four nested models (all fit with the same
+#'     final covariate set -- see Details).}
 #'   \item{`h2_ae`}{Heritability under the AE model.}
 #'   \item{`c2_ce`}{Common-environment proportion under the CE model.}
 #'   \item{`h2_ace`, `c2_ace`}{Joint estimates under the full ACE model.}
@@ -47,6 +60,12 @@
 #'     are not jointly identifiable in this sample -- report the simpler AE
 #'     model (see package vignette / Leocadio-Miguel et al. companion
 #'     analyses).}
+#'   \item{`covs_tested`, `covs_kept`, `covs_dropped`}{Present only if
+#'     `covs` was supplied and `screen = TRUE`: the full candidate list,
+#'     the ones retained (p < `prob_level`), and the ones dropped.}
+#'   \item{`covariate_lrt_p`}{Present only if `covs` was supplied and
+#'     `screen = TRUE`: named numeric vector of each candidate covariate's
+#'     individual LRT p-value against the full-covariate AE model.}
 #' }
 #' Returns `NULL` if `n < min_n`.
 #'
@@ -54,27 +73,48 @@
 #' **Model:** `Omega = sigma2_p * [h2*A + c2*C + (1 - h2 - c2)*I]`, jointly
 #' estimated for the ACE model via multi-start Nelder-Mead on a
 #' logit-reparametrised `(h2, c2)` (guaranteeing `h2, c2 >= 0` and
-#' `h2 + c2 < 1`); AE and CE are 1-D special cases.
+#' `h2 + c2 < 1`); AE and CE are 1-D special cases. Covariates (if any)
+#' enter the mean structure: `E[y] = X %*% beta`, with `X` including an
+#' intercept plus the (standardised) columns named in `covs`.
 #'
-#' **LRTs:** one-sided chi-squared(1) boundary correction, as in
+#' **Covariate screening** (when `covs` is given and `screen = TRUE`):
+#' matches SOLAR Eclipse's `polygenic -screen`, confirmed from source
+#' (`lib/solar.tcl` `proc polygenic`) rather than assumed. SOLAR's
+#' algorithm is a **single pass**, not iterative backward elimination: fit
+#' the AE model with *all* candidate covariates, then for each covariate
+#' individually, fit the AE model with just that one covariate removed and
+#' compute a likelihood-ratio test against the full-covariate model
+#' (chi-squared(1), not boundary-corrected, since a covariate coefficient
+#' is not a boundary parameter). Any covariate with p >= `prob_level` is
+#' dropped; all remaining covariates are kept. This happens once, against
+#' the AE model specifically (not separately for CE/ACE) -- SOLAR's own
+#' script can in principle screen separately per model context, but using
+#' one shared covariate set for all four nested models here keeps the
+#' sporadic/AE/CE/ACE comparisons validly nested (a valid LRT requires the
+#' compared models to share the same mean structure).
+#'
+#' **LRTs for h2/c2:** one-sided chi-squared(1) boundary correction, as in
 #' [herit_vc()], since both null hypotheses (`c2 = 0`, or `h2 = 0`) sit on
 #' the boundary of the parameter space.
 #'
 #' @seealso [build_grm()], [build_household()], [herit_vc()], [herit_bivar()]
-#' @importFrom stats complete.cases
-#' @importFrom rlang abort
-#' @importFrom cli cli_alert_success cli_alert_warning
+#' @importFrom stats complete.cases sd pchisq
+#' @importFrom rlang abort warn
+#' @importFrom cli cli_alert_success cli_alert_warning cli_alert_info
 #' @export
 herit_ace <- function(trait,
                       grm,
                       household,
                       data,
-                      id_col    = "IID",
-                      transform = TRUE,
-                      min_n     = 80L,
-                      verbose   = TRUE) {
+                      covs       = NULL,
+                      screen     = TRUE,
+                      prob_level = 0.10,
+                      id_col     = "IID",
+                      transform  = TRUE,
+                      min_n      = 80L,
+                      verbose    = TRUE) {
 
-  needed <- unique(c(id_col, trait))
+  needed <- unique(c(id_col, trait, covs))
   absent <- setdiff(needed, names(data))
   if (length(absent)) {
     rlang::abort(c("Column(s) not found in `data`:", paste0("  ", paste(absent, collapse = ", "))))
@@ -85,6 +125,16 @@ herit_ace <- function(trait,
 
   dat <- data[stats::complete.cases(data[, needed, drop = FALSE]), needed, drop = FALSE]
   n   <- nrow(dat)
+
+  if (!is.null(covs)) {
+    zero_var <- covs[vapply(covs, function(cv) stats::sd(dat[[cv]]) < 1e-10, logical(1))]
+    if (length(zero_var)) {
+      rlang::warn(paste0("Dropping zero-variance covariate(s): ", paste(zero_var, collapse = ", ")))
+      covs <- setdiff(covs, zero_var)
+    }
+  }
+  if (length(covs) == 0) covs <- NULL
+
   if (n < min_n) {
     if (verbose) cli::cli_alert_warning("Skipping {trait}: n = {n} < {min_n}.")
     return(NULL)
@@ -98,7 +148,37 @@ herit_ace <- function(trait,
   C <- household[ids, ids]
 
   y <- if (transform) int_transform(dat[[trait]]) else dat[[trait]]
-  X <- matrix(1, n, 1)
+
+  screening_result <- NULL
+  if (!is.null(covs)) {
+    Xcov_std <- scale(as.matrix(dat[, covs, drop = FALSE]))
+    X_full   <- cbind(1, Xcov_std)
+
+    if (isTRUE(screen)) {
+      fit_full <- .fit_ace_uni(y, X_full, A, C, "A")
+      p_each   <- stats::setNames(numeric(length(covs)), covs)
+      for (i in seq_along(covs)) {
+        X_reduced <- X_full[, -(i + 1), drop = FALSE]
+        fit_reduced <- .fit_ace_uni(y, X_reduced, A, C, "A")
+        lrt <- max(0, 2 * (fit_full$loglik - fit_reduced$loglik))
+        p_each[i] <- stats::pchisq(lrt, df = 1, lower.tail = FALSE)
+      }
+      kept    <- names(p_each)[p_each < prob_level]
+      dropped <- setdiff(covs, kept)
+      screening_result <- list(covs_tested = covs, covs_kept = kept,
+                               covs_dropped = dropped, covariate_lrt_p = p_each)
+      if (verbose) {
+        cli::cli_alert_info(
+          "{trait}: covariate screening kept {length(kept)}/{length(covs)} ({paste(kept, collapse=', ')})"
+        )
+      }
+      X <- if (length(kept)) cbind(1, Xcov_std[, kept, drop = FALSE]) else matrix(1, n, 1)
+    } else {
+      X <- X_full
+    }
+  } else {
+    X <- matrix(1, n, 1)
+  }
 
   m_sp  <- .fit_ace_uni(y, X, A, C, "none")
   m_ae  <- .fit_ace_uni(y, X, A, C, "A")
@@ -114,7 +194,7 @@ herit_ace <- function(trait,
     )
   }
 
-  list(
+  out <- list(
     trait               = trait,
     n                   = n,
     loglik_sporadic     = round(m_sp$loglik, 5),
@@ -130,4 +210,6 @@ herit_ace <- function(trait,
     chisq_ace_vs_ae     = round(max(0, 2 * (m_ace$loglik - m_ae$loglik)), 4),
     p_ace_vs_ae         = signif(p_ace_vs_ae, 5)
   )
+  if (!is.null(screening_result)) out <- c(out, screening_result)
+  out
 }

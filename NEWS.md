@@ -1,3 +1,42 @@
+## R-itable 0.2.1  (2026-08)
+
+### ✨ New features
+
+* `herit_ace()` gains `covs`, `screen`, and `prob_level` arguments: covariate
+  support (previously absent) plus automatic SOLAR-style covariate
+  screening. Matches `polygenic -screen`'s actual algorithm, confirmed by
+  reading SOLAR's source (`lib/solar.tcl`, `proc polygenic`) rather than
+  assumed: a **single pass**, not iterative backward elimination -- fit
+  the AE model with all candidate covariates, then LRT-test each one
+  individually against that full model (chi-squared(1), not boundary-
+  corrected), and drop any with p >= `prob_level` (default `0.10`,
+  matching SOLAR's own default `probability_level`). The same final
+  covariate set is then used for all four nested models
+  (sporadic/AE/CE/ACE), which keeps the nested LRTs valid (a valid LRT
+  needs the compared models to share the same mean structure) -- SOLAR's
+  own script can in principle screen separately per model context, but a
+  single shared screening pass is the more defensible choice here.
+  `covs = NULL` (the default) reproduces prior behaviour exactly.
+
+  Prompted by a manuscript decision to report R-itable's own analysis
+  rather than SOLAR's, which required matching SOLAR's actual covariate
+  methodology (age, sex, age*sex, age^2, age^2*sex) rather than
+  hard-coding no covariates. Empirically, on the Gomes et al. dataset, all
+  5 candidate covariates screen out for both anxiety and depression
+  (p in 0.30-0.74) -- confirming `solar_full_analysis.tcl`'s own comment
+  that "age, sex, and their interactions were not significant for any
+  trait tested" applied to these two traits as well, and confirming the
+  previous no-covariate default already matched SOLAR's actual final
+  model for this dataset.
+
+### 🧪 Tests
+
+* `test-herit_ace.R`: covariate screening keeps a strongly predictive
+  covariate (robust across random seeds, unlike asserting a *specific*
+  noise draw is non-significant, which is inherently flaky at any p-value
+  threshold), `screen = FALSE` bypass, zero-variance covariate handling,
+  and backward-compatible output shape when `covs = NULL`.
+
 ## R-itable 0.2.0  (2026-08)
 
 ### ✨ New features
