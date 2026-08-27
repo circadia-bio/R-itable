@@ -36,7 +36,8 @@ trace back to first principles.
   full-sibling 0.5.
 - 🏠 **Household/common-environment effects** — `herit_ace()` fits nested
   sporadic/AE/CE/ACE models and tests whether A and C are jointly
-  identifiable in your sample.
+  identifiable in your sample, with optional SOLAR-`-screen`-style
+  automatic covariate screening (`covs = ...`).
 - 🔗 **Bivariate genetic/environmental correlations** — `herit_bivar()` /
   `herit_bivar_batch()` estimate rhoG, rhoE, and derived rhoP between trait
   pairs, with LRTs and Benjamini-Hochberg FDR correction across a batch.
@@ -145,6 +146,14 @@ C <- build_household(twin_pedigree$hhid, twin_pedigree$id)
 
 # A vs C identifiability: sporadic / AE / CE / full ACE
 herit_ace("anxiety_score", grm = A, household = C, data = twin_data, id_col = "IID")
+
+# ...with automatic covariate screening (SOLAR's polygenic -screen algorithm:
+# single-pass LRT test of each candidate, drop if p >= prob_level)
+twin_data$age_sex <- twin_data$age * twin_data$sex
+res <- herit_ace("anxiety_score", grm = A, household = C, data = twin_data,
+                covs = c("age", "sex", "age_sex"), id_col = "IID")
+res$covs_kept      # covariates that survived screening
+res$covariate_lrt_p # each candidate's individual LRT p-value
 
 # Bivariate genetic/environmental correlation between two traits
 herit_bivar("anxiety_score", "depression_score", grm = A, data = twin_data, id_col = "IID")
