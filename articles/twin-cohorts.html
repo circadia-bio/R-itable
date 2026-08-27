@@ -373,7 +373,42 @@ jointly. This is a common, real finding in twin studies with modest
 samples, not a bug: report the simpler AE model in that case
 (<code>h2_ae</code>), and note the limitation.</li>
 </ul>
+<div class="section level3">
+<h3 id="covariates-and-automatic-screening">Covariates and automatic screening<a class="anchor" aria-label="anchor" href="#covariates-and-automatic-screening"></a>
+</h3>
+<p><code><a href="../reference/herit_ace.html">herit_ace()</a></code> can adjust for covariates via
+<code>covs</code>, with optional automatic screening that replicates
+SOLAR Eclipse’s <code>polygenic -screen</code> algorithm (confirmed from
+SOLAR’s own source, not assumed): fit the AE model with <em>all</em>
+candidate covariates, then likelihood-ratio-test each one individually
+against that full model, and drop any with p &gt;=
+<code>prob_level</code> (default <code>0.10</code>, SOLAR’s own
+default). The same final covariate set is then used for all four nested
+models, keeping the sporadic/AE/CE/ACE comparisons validly nested.</p>
+<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<code class="sourceCode R"><span><span class="co"># A synthetic covariate that genuinely predicts sleep_quality, and one</span></span>
+<span><span class="co"># that's pure noise -- screening should keep the first and drop the second</span></span>
+<span><span class="co"># (though with any single random draw, a pure-noise covariate can</span></span>
+<span><span class="co"># occasionally clear a p &lt; 0.10 threshold by chance, same as any</span></span>
+<span><span class="co"># significance test).</span></span>
+<span><span class="fu"><a href="https://rdrr.io/r/base/Random.html" class="external-link">set.seed</a></span><span class="op">(</span><span class="fl">1</span><span class="op">)</span></span>
+<span><span class="va">dat</span><span class="op">$</span><span class="va">age</span>       <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/Round.html" class="external-link">round</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/stats/Uniform.html" class="external-link">runif</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">dat</span><span class="op">)</span>, <span class="fl">20</span>, <span class="fl">60</span><span class="op">)</span><span class="op">)</span></span>
+<span><span class="va">dat</span><span class="op">$</span><span class="va">predictor</span> <span class="op">&lt;-</span> <span class="va">dat</span><span class="op">$</span><span class="va">sleep_quality</span> <span class="op">*</span> <span class="fl">2</span> <span class="op">+</span> <span class="fu"><a href="https://rdrr.io/r/stats/Normal.html" class="external-link">rnorm</a></span><span class="op">(</span><span class="fu"><a href="https://rdrr.io/r/base/nrow.html" class="external-link">nrow</a></span><span class="op">(</span><span class="va">dat</span><span class="op">)</span>, sd <span class="op">=</span> <span class="fl">0.1</span><span class="op">)</span></span>
+<span></span>
+<span><span class="va">res_ace_cov</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/herit_ace.html">herit_ace</a></span><span class="op">(</span><span class="st">"sleep_quality"</span>, grm <span class="op">=</span> <span class="va">A</span>, household <span class="op">=</span> <span class="va">C</span>, data <span class="op">=</span> <span class="va">dat</span>,</span>
+<span>                         covs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"predictor"</span><span class="op">)</span>, id_col <span class="op">=</span> <span class="st">"IID"</span><span class="op">)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BBBB;">ℹ</span> sleep_quality: covariate screening kept 1/2 (predictor)</span></span>
+<span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> sleep_quality  n=120  h2(AE)=0.028  c2(CE)=0  c2(ACE)=0  p(ACE vs AE)=0.5</span></span>
+<span><span class="va">res_ace_cov</span><span class="op">$</span><span class="va">covariate_lrt_p</span>  <span class="co"># each candidate's individual LRT p-value</span></span>
+<span><span class="co">#&gt;           age     predictor </span></span>
+<span><span class="co">#&gt;  9.029771e-01 7.963235e-131</span></span>
+<span><span class="va">res_ace_cov</span><span class="op">$</span><span class="va">covs_kept</span>        <span class="co"># the ones that survived screening</span></span>
+<span><span class="co">#&gt; [1] "predictor"</span></span></code></pre></div>
+<p>Pass <code>screen = FALSE</code> to include every covariate in
+<code>covs</code> unconditionally, skipping the LRT screening step
+entirely.</p>
 <hr>
+</div>
 </div>
 <div class="section level2">
 <h2 id="bivariate-geneticenvironmental-correlation-herit_bivar">4. Bivariate genetic/environmental correlation:
@@ -383,7 +418,7 @@ samples, not a bug: report the simpler AE model in that case
 <strong>two</strong> traits, how much of their phenotypic correlation is
 explained by shared genetic causes (rhoG) vs shared environmental causes
 (rhoE)?</p>
-<div class="sourceCode" id="cb6"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="va">res_biv</span> <span class="op">&lt;-</span> <span class="fu"><a href="../reference/herit_bivar.html">herit_bivar</a></span><span class="op">(</span><span class="st">"sleep_quality"</span>, <span class="st">"anxiety"</span>, grm <span class="op">=</span> <span class="va">A</span>, data <span class="op">=</span> <span class="va">dat</span>, id_col <span class="op">=</span> <span class="st">"IID"</span><span class="op">)</span></span>
 <span><span class="co">#&gt; <span style="color: #00BB00;">✔</span> sleep_quality x anxiety  n=120  rhoG=0.675 (p=0.0081)  rhoE=0.24 (p=0.201)</span></span>
 <span><span class="fu"><a href="https://rdrr.io/r/utils/str.html" class="external-link">str</a></span><span class="op">(</span><span class="va">res_biv</span><span class="op">)</span></span>
@@ -408,7 +443,7 @@ environmental one – a realistic pattern (a trait pair that looks
 correlated mainly for genetic, not environmental, reasons).</p>
 <p><code>rhoP</code> is the derived phenotypic correlation implied by
 rhoG, rhoE, and the two univariate heritabilities:</p>
-<div class="sourceCode" id="cb7"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="fu"><a href="https://rdrr.io/r/base/with.html" class="external-link">with</a></span><span class="op">(</span><span class="va">res_biv</span>, <span class="va">rhoG</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="va">h2_1</span> <span class="op">*</span> <span class="va">h2_2</span><span class="op">)</span> <span class="op">+</span> <span class="va">rhoE</span> <span class="op">*</span> <span class="fu"><a href="https://rdrr.io/r/base/MathFun.html" class="external-link">sqrt</a></span><span class="op">(</span><span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">h2_1</span><span class="op">)</span> <span class="op">*</span> <span class="op">(</span><span class="fl">1</span> <span class="op">-</span> <span class="va">h2_2</span><span class="op">)</span><span class="op">)</span><span class="op">)</span></span>
 <span><span class="co">#&gt; [1] 0.4542334</span></span>
 <span><span class="va">res_biv</span><span class="op">$</span><span class="va">rhoP</span></span>
@@ -425,7 +460,7 @@ Benjamini-Hochberg FDR correction separately within each of the three
 p-value families (rhoG, rhoE, rhoP) – matching the convention used when
 cross-checking against SOLAR Eclipse output (see
 <code><a href="../reference/herit_bivar_batch.html">?herit_bivar_batch</a></code>).</p>
-<div class="sourceCode" id="cb8"><pre class="downlit sourceCode r">
+<div class="sourceCode" id="cb9"><pre class="downlit sourceCode r">
 <code class="sourceCode R"><span><span class="co"># Illustrative only -- 'anxiety' is the only second trait in this vignette's</span></span>
 <span><span class="co"># toy dataset; in a real analysis this would be a panel of phenotypes.</span></span>
 <span><span class="va">pairs</span> <span class="op">&lt;-</span> <span class="fu"><a href="https://rdrr.io/r/base/data.frame.html" class="external-link">data.frame</a></span><span class="op">(</span></span>
@@ -461,7 +496,7 @@ decimal places on the large majority of trait pairs checked).</p>
 <p>If you use <strong>R-itable</strong> in a publication, please
 cite:</p>
 <pre><code>Franca, L. &amp; Leocadio-Miguel, M. (2026). R-itable: Pedigree-Based Heritability
-Estimation for Family Cohort Studies. R package version 0.2.0.
+Estimation for Family Cohort Studies. R package version 0.2.1.
 https://github.com/circadia-bio/R-itable</code></pre>
 </div>
   </main><aside class="col-md-3"><nav id="toc" aria-label="Table of contents"><h2>On this page</h2>

@@ -177,7 +177,7 @@
 <ul>
 <li>🔬 <strong>Profile-likelihood VC estimator</strong> — eigendecomposition of the GRM, 1-D optimisation, exact LRT with one-sided χ²(1) boundary correction (matching SOLAR).</li>
 <li>👯 <strong>Twin cohorts</strong> — <code>build_grm(mz_col = ...)</code> gives monozygotic pairs (or larger groups) the correct kinship of 1.0, instead of the ordinary full-sibling 0.5.</li>
-<li>🏠 <strong>Household/common-environment effects</strong> — <code><a href="reference/herit_ace.html">herit_ace()</a></code> fits nested sporadic/AE/CE/ACE models and tests whether A and C are jointly identifiable in your sample.</li>
+<li>🏠 <strong>Household/common-environment effects</strong> — <code><a href="reference/herit_ace.html">herit_ace()</a></code> fits nested sporadic/AE/CE/ACE models and tests whether A and C are jointly identifiable in your sample, with optional SOLAR-<code>-screen</code>-style automatic covariate screening (<code>covs = ...</code>).</li>
 <li>🔗 <strong>Bivariate genetic/environmental correlations</strong> — <code><a href="reference/herit_bivar.html">herit_bivar()</a></code> / <code><a href="reference/herit_bivar_batch.html">herit_bivar_batch()</a></code> estimate rhoG, rhoE, and derived rhoP between trait pairs, with LRTs and Benjamini-Hochberg FDR correction across a batch.</li>
 <li>📐 <strong>Profile-likelihood CIs</strong> — not Wald ±1.96 SE; proper asymmetric intervals via <code><a href="https://rdrr.io/r/stats/uniroot.html" class="external-link">uniroot()</a></code>.</li>
 <li>🔄 <strong>INT transformation</strong> — inverse-normal transform applied internally; also exported as <code><a href="reference/int_transform.html">int_transform()</a></code> for use in other pipelines.</li>
@@ -279,6 +279,14 @@
 <span></span>
 <span><span class="co"># A vs C identifiability: sporadic / AE / CE / full ACE</span></span>
 <span><span class="fu"><a href="reference/herit_ace.html">herit_ace</a></span><span class="op">(</span><span class="st">"anxiety_score"</span>, grm <span class="op">=</span> <span class="va">A</span>, household <span class="op">=</span> <span class="va">C</span>, data <span class="op">=</span> <span class="va">twin_data</span>, id_col <span class="op">=</span> <span class="st">"IID"</span><span class="op">)</span></span>
+<span></span>
+<span><span class="co"># ...with automatic covariate screening (SOLAR's polygenic -screen algorithm:</span></span>
+<span><span class="co"># single-pass LRT test of each candidate, drop if p &gt;= prob_level)</span></span>
+<span><span class="va">twin_data</span><span class="op">$</span><span class="va">age_sex</span> <span class="op">&lt;-</span> <span class="va">twin_data</span><span class="op">$</span><span class="va">age</span> <span class="op">*</span> <span class="va">twin_data</span><span class="op">$</span><span class="va">sex</span></span>
+<span><span class="va">res</span> <span class="op">&lt;-</span> <span class="fu"><a href="reference/herit_ace.html">herit_ace</a></span><span class="op">(</span><span class="st">"anxiety_score"</span>, grm <span class="op">=</span> <span class="va">A</span>, household <span class="op">=</span> <span class="va">C</span>, data <span class="op">=</span> <span class="va">twin_data</span>,</span>
+<span>                covs <span class="op">=</span> <span class="fu"><a href="https://rdrr.io/r/base/c.html" class="external-link">c</a></span><span class="op">(</span><span class="st">"age"</span>, <span class="st">"sex"</span>, <span class="st">"age_sex"</span><span class="op">)</span>, id_col <span class="op">=</span> <span class="st">"IID"</span><span class="op">)</span></span>
+<span><span class="va">res</span><span class="op">$</span><span class="va">covs_kept</span>      <span class="co"># covariates that survived screening</span></span>
+<span><span class="va">res</span><span class="op">$</span><span class="va">covariate_lrt_p</span> <span class="co"># each candidate's individual LRT p-value</span></span>
 <span></span>
 <span><span class="co"># Bivariate genetic/environmental correlation between two traits</span></span>
 <span><span class="fu"><a href="reference/herit_bivar.html">herit_bivar</a></span><span class="op">(</span><span class="st">"anxiety_score"</span>, <span class="st">"depression_score"</span>, grm <span class="op">=</span> <span class="va">A</span>, data <span class="op">=</span> <span class="va">twin_data</span>, id_col <span class="op">=</span> <span class="st">"IID"</span><span class="op">)</span></span>

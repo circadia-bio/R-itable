@@ -239,6 +239,43 @@ Reading the output:
   samples, not a bug: report the simpler AE model in that case
   (`h2_ae`), and note the limitation.
 
+### Covariates and automatic screening
+
+[`herit_ace()`](https://r-itable.circadia-lab.uk/reference/herit_ace.md)
+can adjust for covariates via `covs`, with optional automatic screening
+that replicates SOLAR Eclipse’s `polygenic -screen` algorithm (confirmed
+from SOLAR’s own source, not assumed): fit the AE model with *all*
+candidate covariates, then likelihood-ratio-test each one individually
+against that full model, and drop any with p \>= `prob_level` (default
+`0.10`, SOLAR’s own default). The same final covariate set is then used
+for all four nested models, keeping the sporadic/AE/CE/ACE comparisons
+validly nested.
+
+``` r
+
+# A synthetic covariate that genuinely predicts sleep_quality, and one
+# that's pure noise -- screening should keep the first and drop the second
+# (though with any single random draw, a pure-noise covariate can
+# occasionally clear a p < 0.10 threshold by chance, same as any
+# significance test).
+set.seed(1)
+dat$age       <- round(runif(nrow(dat), 20, 60))
+dat$predictor <- dat$sleep_quality * 2 + rnorm(nrow(dat), sd = 0.1)
+
+res_ace_cov <- herit_ace("sleep_quality", grm = A, household = C, data = dat,
+                         covs = c("age", "predictor"), id_col = "IID")
+#> ℹ sleep_quality: covariate screening kept 1/2 (predictor)
+#> ✔ sleep_quality  n=120  h2(AE)=0.028  c2(CE)=0  c2(ACE)=0  p(ACE vs AE)=0.5
+res_ace_cov$covariate_lrt_p  # each candidate's individual LRT p-value
+#>           age     predictor 
+#>  9.029771e-01 7.963235e-131
+res_ace_cov$covs_kept        # the ones that survived screening
+#> [1] "predictor"
+```
+
+Pass `screen = FALSE` to include every covariate in `covs`
+unconditionally, skipping the LRT screening step entirely.
+
 ------------------------------------------------------------------------
 
 ## 4. Bivariate genetic/environmental correlation: `herit_bivar()`
@@ -344,5 +381,5 @@ checked).
 If you use **R-itable** in a publication, please cite:
 
     Franca, L. & Leocadio-Miguel, M. (2026). R-itable: Pedigree-Based Heritability
-    Estimation for Family Cohort Studies. R package version 0.2.0.
+    Estimation for Family Cohort Studies. R package version 0.2.1.
     https://github.com/circadia-bio/R-itable

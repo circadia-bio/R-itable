@@ -336,5 +336,5 @@ if (requireNamespace("ggplot2", quietly = TRUE)) {
 If you use **R-itable** in a publication, please cite:
 
     Franca, L. & Leocadio-Miguel, M. (2026). R-itable: Pedigree-Based Heritability
-    Estimation for Family Cohort Studies. R package version 0.2.0.
+    Estimation for Family Cohort Studies. R package version 0.2.1.
     https://github.com/circadia-bio/R-itable
