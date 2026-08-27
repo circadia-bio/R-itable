@@ -169,12 +169,15 @@
   # Polish the best candidate with a second Nelder-Mead pass from its own
   # optimum -- guards against the flat/weakly-identified likelihood surfaces
   # seen for low-signal trait pairs, where a single pass can stop early.
+  # Nelder-Mead can occasionally return a non-finite $value if it stalls
+  # right at a boundary (all simplex vertices fail feasibility), so this
+  # must be checked before comparing -- `if (NA)` errors otherwise.
   op2 <- tryCatch(
     stats::optim(best$par, .nll_bivar_eigen, prep = prep, method = "Nelder-Mead",
                 control = list(maxit = 3000, reltol = 1e-13)),
     error = function(e) NULL
   )
-  if (!is.null(op2) && op2$value < best$value) best <- op2
+  if (isTRUE(op2$value < best$value)) best <- op2
 
   h2_1 <- stats::plogis(best$par[1]); h2_2 <- stats::plogis(best$par[2])
   rG   <- 0.9 * tanh(best$par[3]);    rE   <- 0.9 * tanh(best$par[4])
